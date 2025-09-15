@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="my" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>အလုပ်အကိုင်အသစ်တင်ရန်</title>
+    <style>
+        /* CSS for the form - you can integrate this into your existing stylesheet */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .form-actions button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>အလုပ်အကိုင်အသစ် တင်ပါ</h2>
+        <form action="#" th:action="@{/saveJob}" th:object="${jobPosting}" method="post">
+            <div class="form-group">
+                <label for="title">ရာထူး</label>
+                <input type="text" id="title" th:field="*{title}" required>
+            </div>
+            <div class="form-group">
+                <label for="description">အလုပ်ဖော်ပြချက်</label>
+                <textarea id="description" th:field="*{description}" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="location">တည်နေရာ</label>
+                <input type="text" id="location" th:field="*{location}" required>
+            </div>
+            <div class="form-group">
+                <label for="salary">လစာ</label>
+                <input type="text" id="salary" th:field="*{salary}">
+            </div>
+            <div class="form-group">
+                <label for="jobType">အလုပ်အမျိုးအစား</label>
+                <input type="text" id="jobType" th:field="*{jobType}">
+            </div>
+            <div class="form-group">
+                <label for="company">ကုမ္ပဏီ</label>
+                <select id="company" th:field="*{company}">
+                    <option th:each="company : ${companies}" th:value="${company.id}" th:text="${company.name}"></option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit">တင်မည်</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
