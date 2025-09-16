@@ -16,7 +16,11 @@ public class JobPostingService {
     public List<JobPosting> findAllJobPostings() {
         return jobPostingRepository.findAll();
     }
-
+   
+    public JobPosting findById(Long id) {
+    return jobPostingRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid job Id:" + id));
+}
+    
     // JobPosting အသစ်တစ်ခုကို database ထဲသို့ ထည့်သွင်းမည်
     public JobPosting saveJobPosting(JobPosting jobPosting) {
         return jobPostingRepository.save(jobPosting);

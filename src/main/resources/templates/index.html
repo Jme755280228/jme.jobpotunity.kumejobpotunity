@@ -587,7 +587,7 @@
                 <div><i class="fas fa-money-bill-wave"></i> လစာ: <span th:text="${job.salary}"></span> ကျပ်</div>
                 <div><i class="fas fa-clock"></i> <span th:text="${job.jobType}"></span></div>
             </div>
-            <a href="#" class="apply-btn">အလုပ်အကိုင်ကြည့်ရန်</a>
+                <a th:href="@{/job/{id}(id=${job.id})}" class="apply-btn">အလုပ်အကိုင်ကြည့်ရန်</a>
         </div>
     </div>
 </section>
