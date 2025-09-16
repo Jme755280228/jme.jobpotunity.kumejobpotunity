@@ -3,42 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>အလုပ်အသစ်တင်ရန်</title>
+    <title>အလုပ်အကိုင် ပြင်ဆင်ရန်</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
     <div class="form-container">
-        <h2>အလုပ်အသစ်တင်ရန်</h2>
-        <form action="#" th:action="@{/saveJob}" th:object="${jobPosting}" method="post">
+        <h2>အလုပ်အကိုင် ပြင်ဆင်ပါ</h2>
+        <form action="#" th:action="@{/updateJob/{id}(id=${jobPosting.id})}" th:object="${jobPosting}" method="post">
+            <input type="hidden" th:field="*{id}">
+            
             <div class="form-group">
                 <label for="title">ရာထူး</label>
-                <input type="text" id="title" th:field="*{title}" required>
+                <input type="text" id="title" th:field="*{title}">
             </div>
             <div class="form-group">
                 <label for="description">အလုပ်ဖော်ပြချက်</label>
-                <textarea id="description" th:field="*{description}" required></textarea>
+                <textarea id="description" th:field="*{description}"></textarea>
             </div>
             <div class="form-group">
                 <label for="location">တည်နေရာ</label>
-                <input type="text" id="location" th:field="*{location}" required>
+                <input type="text" id="location" th:field="*{location}">
             </div>
             <div class="form-group">
                 <label for="salary">လစာ</label>
-                <input type="text" id="salary" th:field="*{salary}" required>
+                <input type="text" id="salary" th:field="*{salary}">
             </div>
             <div class="form-group">
                 <label for="jobType">အလုပ်အမျိုးအစား</label>
-                <input type="text" id="jobType" th:field="*{jobType}" required>
+                <input type="text" id="jobType" th:field="*{jobType}">
             </div>
             <div class="form-group">
                 <label for="company">ကုမ္ပဏီ</label>
-                <select id="company" th:field="*{company}" required>
-                    <option value="">ကုမ္ပဏီတစ်ခုရွေးပါ</option>
-                    <option th:each="company : ${companies}" th:value="${company.id}" th:text="${company.name}"></option>
+                <select id="company" th:field="*{company}">
+                    <option th:each="company : ${companies}" th:value="${company.id}" th:text="${company.name}" 
+                            th:selected="${jobPosting.company != null and company.id == jobPosting.company.id}"></option>
                 </select>
             </div>
             <div class="form-actions">
-                <button type="submit">တင်ရန်</button>
+                <button type="submit">ပြင်ဆင်မည်</button>
             </div>
         </form>
     </div>

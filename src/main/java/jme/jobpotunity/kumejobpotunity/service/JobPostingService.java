@@ -21,6 +21,12 @@ public class JobPostingService {
     return jobPostingRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid job Id:" + id));
 }
     
+    // Job တစ်ခုကို ဖျက်ပစ်မည့် method
+public void deleteJobPosting(Long id) {
+    jobPostingRepository.deleteById(id);
+}
+
+    
     // JobPosting အသစ်တစ်ခုကို database ထဲသို့ ထည့်သွင်းမည်
     public JobPosting saveJobPosting(JobPosting jobPosting) {
         return jobPostingRepository.save(jobPosting);
