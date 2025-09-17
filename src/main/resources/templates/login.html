@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="my" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>လော့ဂ်အင်ဝင်ရန်</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+</head>
+<body>
+  
+  <div th:replace="fragments/header :: main-header"></div>
+  
+    <div class="login-container">
+        <h2>လော့ဂ်အင်ဝင်ရန်</h2>
+        <div th:if="${param.error}" class="error-message">အသုံးပြုသူအမည် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။</div>
+        <form th:action="@{/login}" method="post" class="login-form">
+            <input type="text" name="username" placeholder="အသုံးပြုသူအမည်" required autofocus>
+            <input type="password" name="password" placeholder="စကားဝှက်" required>
+            <button type="submit">လော့ဂ်အင်</button>
+        </form>
+    </div>
+</body>
+</html>

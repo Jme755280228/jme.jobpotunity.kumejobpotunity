@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="my" xmlns:th="http://www.thymeleaf.org">
+<html lang="my" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,17 +10,8 @@
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <a href="/" class="logo"><i class="fas fa-briefcase"></i> ကူညီမှု အလုပ်အကိုင်ရှာဖွေရေး</a>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="/">အိမ်</a></li>
-                    <li><a href="/newJob">အလုပ်အသစ်တင်ရန်</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    
+    <div th:replace="fragments/header :: main-header"></div>
 
     <section class="hero">
         <div class="container">

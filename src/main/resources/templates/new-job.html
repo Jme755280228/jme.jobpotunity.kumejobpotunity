@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="my" xmlns:th="http://www.thymeleaf.org">
+<html lang="my" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +7,9 @@
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
+  
+  <div th:replace="fragments/header :: main-header"></div>
+  
     <div class="form-container">
         <h2>အလုပ်အသစ်တင်ရန်</h2>
         <form action="#" th:action="@{/saveJob}" th:object="${jobPosting}" method="post">
