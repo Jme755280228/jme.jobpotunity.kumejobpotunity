@@ -4,7 +4,9 @@ import jme.jobpotunity.kumejobpotunity.entity.JobPosting;
 import jme.jobpotunity.kumejobpotunity.repository.JobPostingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class JobPostingService {
@@ -12,24 +14,34 @@ public class JobPostingService {
     @Autowired
     private JobPostingRepository jobPostingRepository;
 
-    // JobPosting အားလုံးကို database မှ ရယူမည်
+    // အလုပ်အားလုံးကို database မှ ရှာဖွေပြီး ပြန်ပေးသည်။
     public List<JobPosting> findAllJobPostings() {
         return jobPostingRepository.findAll();
     }
-   
-    public JobPosting findById(Long id) {
-    return jobPostingRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid job Id:" + id));
-}
     
-    // Job တစ်ခုကို ဖျက်ပစ်မည့် method
-public void deleteJobPosting(Long id) {
-    jobPostingRepository.deleteById(id);
-}
+    // search functionality အတွက် method အသစ်
+    // title (သို့) location ကို query ဖြင့် ရှာဖွေပေးသည်။
+    public List<JobPosting> searchJobPostings(String query) {
+        return jobPostingRepository.findByTitleContainingIgnoreCaseOrLocationContainingIgnoreCase(query, query);
+    }
 
+    // Job Posting အသစ် သို့မဟုတ် ရှိပြီးသား Job Posting ကို database ထဲသို့ သိမ်းဆည်းသည်။
+    public void saveJobPosting(JobPosting jobPosting) {
+        jobPostingRepository.save(jobPosting);
+    }
     
-    // JobPosting အသစ်တစ်ခုကို database ထဲသို့ ထည့်သွင်းမည်
-    public JobPosting saveJobPosting(JobPosting jobPosting) {
-        return jobPostingRepository.save(jobPosting);
+    // ID ဖြင့် Job Posting တစ်ခုကို ရှာဖွေသည်။
+    public JobPosting findById(Long id) {
+        Optional<JobPosting> result = jobPostingRepository.findById(id);
+        if (result.isPresent()) {
+            return result.get();
+        } else {
+            throw new RuntimeException("Job Posting not found with id: " + id);
+        }
+    }
+    
+    // ID ဖြင့် Job Posting ကို database မှ ဖျက်ပစ်သည်။
+    public void deleteJobPosting(Long id) {
+        jobPostingRepository.deleteById(id);
     }
 }
-

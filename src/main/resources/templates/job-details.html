@@ -7,10 +7,9 @@
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
-    <div th:replace="fragments/header :: main-header"></div>
+    <div th:replace="~{fragments/header :: main-header}"></div>
 
     <div class="container">
-        
         <div class="job-details-card" th:object="${job}">
             <div class="job-details-header">
                 <div class="company-info">
@@ -29,13 +28,18 @@
                 <h3>အလုပ်ဖော်ပြချက်</h3>
                 <pre th:text="*{description}"></pre>
             </div>
-            
+
             <div class="action-buttons">
-                <a href="#" class="btn btn-apply">ယခု လျှောက်ထားပါ</a>
-                
+                <div sec:authorize="hasRole('USER')">
+                    <form th:action="@{/job/apply/{id}(id=*{id})}" method="post">
+                        <button type="submit" class="btn btn-apply">ယခု လျှောက်ထားပါ</button>
+                    </form>
+                </div>
+            
                 <div sec:authorize="hasRole('ADMIN')">
                     <a th:href="@{/editJob/{id}(id=*{id})}" class="btn btn-edit">ပြင်ဆင်ရန်</a>
-                    <a th:href="@{/deleteJob/{id}(id=*{id})}" class="btn btn-delete">ဖျက်ပစ်ရန်</a>
+                    <a th:href="@{/deleteJob/{id}(id=*{id})}" class="btn btn-delete"
+                       onclick="return confirm('သေချာပါသလား? ဖျက်လိုက်ရင် ပြန်ဖော်မရတော့ပါဘူး')">ဖျက်ပစ်ရန်</a>
                 </div>
                 
                 <a th:href="@{/}" class="btn btn-back">နောက်သို့</a>

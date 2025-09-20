@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="my" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>အကောင့်အသစ် ဖန်တီးရန်</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  
+  <div th:replace="~{fragments/header :: main-header}"></div>
+
+    <div class="login-container">
+        <h2>အကောင့်အသစ် ဖန်တီးပါ</h2>
+        
+        <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+        <form th:action="@{/register}" method="post" class="login-form">
+            <input type="text" name="username" placeholder="အသုံးပြုသူအမည်" required>
+            <input type="password" name="password" placeholder="စကားဝှက်" required>
+            <button type="submit">အကောင့်ဖန်တီးမည်</button>
+        </form>
+
+        <p class="login-link">
+            အကောင့်ရှိပြီးသားလား? <a th:href="@{/login}">လော့ဂ်အင်ဝင်ပါ</a>
+        </p>
+    </div>
+  
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    
+</body>
+</html>

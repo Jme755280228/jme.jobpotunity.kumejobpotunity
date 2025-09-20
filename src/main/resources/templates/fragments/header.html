@@ -1,22 +1,32 @@
+<!DOCTYPE html>
 <html lang="my" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
+    <meta charset="UTF-8">
 </head>
 <body>
     <div th:fragment="main-header">
         <header class="header">
             <div class="container">
-                <a href="/" class="logo"><i class="fas fa-briefcase"></i> ကူညီမှု အလုပ်အကိုင်ရှာဖွေရေး</a>
+                <a th:href="@{/}" class="logo"><i class="fas fa-briefcase"></i> ကူညီမှု အလုပ်အကိုင်ရှာဖွေရေး</a>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="/">အိမ်</a></li>
+                        <li><a th:href="@{/}">အိမ်</a></li>
                         <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/newJob}">အလုပ်အသစ်တင်ရန်</a></li>
+
+                        <li sec:authorize="isAuthenticated()">
+                            <a th:href="@{/changePassword}">စကားဝှက် ပြောင်းလဲရန်</a>
+                        </li>
                         <li sec:authorize="isAuthenticated()">
                             <form th:action="@{/logout}" method="post">
                                 <button type="submit" class="logout-btn">ထွက်ရန်</button>
                             </form>
                         </li>
+
                         <li sec:authorize="!isAuthenticated()">
-                            <a href="/login">လော့ဂ်အင်</a>
+                            <a th:href="@{/register}">အကောင့်ဖွင့်ရန်</a>
+                        </li>
+                        <li sec:authorize="!isAuthenticated()">
+                            <a th:href="@{/login}">လော့ဂ်အင်</a>
                         </li>
                     </ul>
                 </nav>

@@ -2,15 +2,21 @@ package jme.jobpotunity.kumejobpotunity.controller;
 
 import jme.jobpotunity.kumejobpotunity.entity.Company;
 import jme.jobpotunity.kumejobpotunity.entity.JobPosting;
+import jme.jobpotunity.kumejobpotunity.entity.User;
 import jme.jobpotunity.kumejobpotunity.service.CompanyService;
+import jme.jobpotunity.kumejobpotunity.service.JobApplicationService;
 import jme.jobpotunity.kumejobpotunity.service.JobPostingService;
+import jme.jobpotunity.kumejobpotunity.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @Controller
@@ -22,10 +28,21 @@ public class JobController {
     @Autowired
     private JobPostingService jobPostingService;
 
-    // ပင်မစာမျက်နှာကို ပြသပေးမည့် method
+    @Autowired
+    private JobApplicationService jobApplicationService;
+
+    @Autowired
+    private UserService userService;
+
+    // ပင်မစာမျက်နှာနှင့် search functionality
     @GetMapping("/")
-    public String viewHomePage(Model model) {
-        List<JobPosting> jobPostings = jobPostingService.findAllJobPostings();
+    public String viewHomePage(@RequestParam(value = "query", required = false) String query, Model model) {
+        List<JobPosting> jobPostings;
+        if (query != null && !query.isEmpty()) {
+            jobPostings = jobPostingService.searchJobPostings(query);
+        } else {
+            jobPostings = jobPostingService.findAllJobPostings();
+        }
         model.addAttribute("jobPostings", jobPostings);
         return "index";
     }
@@ -35,10 +52,8 @@ public class JobController {
     public String showNewJobForm(Model model) {
         JobPosting jobPosting = new JobPosting();
         model.addAttribute("jobPosting", jobPosting);
-        
         List<Company> companies = companyService.findAllCompanies();
         model.addAttribute("companies", companies);
-        
         return "new-job";
     }
 
@@ -67,12 +82,12 @@ public class JobController {
         return "edit-job";
     }
 
-// Job တစ်ခုကို ဖျက်ပစ်မည့် method
-@GetMapping("/deleteJob/{id}")
-public String deleteJob(@PathVariable("id") Long id) {
-    jobPostingService.deleteJobPosting(id);
-    return "redirect:/"; // ဖျက်ပြီးနောက် ပင်မစာမျက်နှာသို့ ပြန်ပို့ပါ
-}
+    // Job တစ်ခုကို ဖျက်ပစ်မည့် method
+    @GetMapping("/deleteJob/{id}")
+    public String deleteJob(@PathVariable("id") Long id) {
+        jobPostingService.deleteJobPosting(id);
+        return "redirect:/";
+    }
 
     // ပြင်ဆင်လိုက်သော data များကို database ထဲသို့ သိမ်းဆည်းပေးမည့် method
     @PostMapping("/updateJob/{id}")
@@ -80,5 +95,18 @@ public String deleteJob(@PathVariable("id") Long id) {
         jobPosting.setId(id);
         jobPostingService.saveJobPosting(jobPosting);
         return "redirect:/job/" + id;
+    }
+
+    // Job လျှောက်ထားမှုကို လက်ခံမည့် method
+    @PostMapping("/job/apply/{id}")
+    public String applyForJob(@PathVariable("id") Long jobId, Authentication authentication) {
+        String username = authentication.getName();
+        User user = userService.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        JobPosting job = jobPostingService.findById(jobId);
+        jobApplicationService.applyForJob(job, user);
+
+        return "redirect:/job/" + jobId + "?applied";
     }
 }

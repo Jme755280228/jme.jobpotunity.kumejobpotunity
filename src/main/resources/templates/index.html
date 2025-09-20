@@ -11,13 +11,19 @@
 </head>
 <body>
     
-    <div th:replace="fragments/header :: main-header"></div>
+    <div th:replace="~{fragments/header :: main-header}"></div>
 
     <section class="hero">
         <div class="container">
             <h1>ကျွန်မတို့နဲ့ အလုပ်လုပ်ကြရအောင်</h1>
             <p>သင့်ရဲ့ စွမ်းရည်နဲ့ ကိုက်ညီတဲ့ အလုပ်အကိုင်တွေကို ဒီမှာ ရှာဖွေနိုင်ပါတယ်</p>
-            <a th:href="@{/newJob}" class="add-job-btn">အလုပ်အသစ်တင်မည်</a>
+          
+           <form th:action="@{/}" method="get" class="search-form">
+                <input type="text" name="query" placeholder="အလုပ်အမည်၊ တည်နေရာဖြင့် ရှာပါ...">
+                <button type="submit"><i class="fas fa-search"></i> ရှာဖွေရန်</button>
+            </form>
+          
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/newJob}" class="add-job-btn">အလုပ်အသစ်တင်မည်</a>
         </div>
     </section>
 

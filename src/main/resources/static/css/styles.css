@@ -113,6 +113,46 @@ body {
     text-align: center;
 }
 
+.search-form {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.search-form input[type="text"] {
+    flex: 1;
+    padding: 12px 20px;
+    border: 1px solid #ccc;
+    border-radius: 50px 0 0 50px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.search-form button {
+    padding: 12px 25px;
+    background-color: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 0 50px 50px 0;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.search-form button:hover {
+    background-color: #00a644;
+}
+
+.search-form input[type="text"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 5px rgba(26, 115, 232, 0.5);
+}
+
+
 /* Login page styles */
 .login-container {
     width: 100%;
