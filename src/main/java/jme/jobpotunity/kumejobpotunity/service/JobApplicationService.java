@@ -9,16 +9,24 @@ import jme.jobpotunity.kumejobpotunity.repository.JobApplicationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 public class JobApplicationService {
 
     @Autowired
     private JobApplicationRepository jobApplicationRepository;
 
-    public void applyForJob(JobPosting job, User user) {
-        JobApplication application = new JobApplication();
-        application.setJob(job);
-        application.setUser(user);
-        jobApplicationRepository.save(application);
+    public void applyForJob(JobPosting job, User user, String applicantName, String applicantEmail, String applicantPhone, String cvFilePath) {
+        JobApplication jobApplication = new JobApplication();
+        jobApplication.setJob(job);
+        jobApplication.setUser(user);
+        jobApplication.setApplicationDate(LocalDate.now());
+        jobApplication.setApplicantName(applicantName);
+        jobApplication.setApplicantEmail(applicantEmail);
+        jobApplication.setApplicantPhone(applicantPhone);
+        jobApplication.setCvFilePath(cvFilePath);
+        
+        jobApplicationRepository.save(jobApplication);
     }
 }

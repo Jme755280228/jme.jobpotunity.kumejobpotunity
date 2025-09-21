@@ -31,9 +31,7 @@
 
             <div class="action-buttons">
                 <div sec:authorize="hasRole('USER')">
-                    <form th:action="@{/job/apply/{id}(id=*{id})}" method="post">
-                        <button type="submit" class="btn btn-apply">ယခု လျှောက်ထားပါ</button>
-                    </form>
+                    <button class="btn btn-apply" onclick="document.getElementById('applicationModal').style.display='block'">ယခု လျှောက်ထားပါ</button>
                 </div>
             
                 <div sec:authorize="hasRole('ADMIN')">
@@ -46,5 +44,42 @@
             </div>
         </div>
     </div>
+    
+    <div id="applicationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>လျှောက်လွှာတင်ရန်</h2>
+            <form th:action="@{/job/apply/{id}(id=${job.id})}" method="post" enctype="multipart/form-data">
+                <label for="name">နာမည်:</label>
+                <input type="text" id="name" name="applicantName" required />
+    
+                <label for="email">အီးမေးလ်:</label>
+                <input type="email" id="email" name="applicantEmail" required />
+    
+                <label for="phone">ဖုန်းနံပါတ်:</label>
+                <input type="tel" id="phone" name="applicantPhone" required />
+    
+                <label for="cv">CV တင်ရန်:</label>
+                <input type="file" id="cv" name="cvFile" accept=".pdf,.doc,.docx" required />
+    
+                <button type="submit" class="btn btn-apply-modal">လျှောက်လွှာတင်မည်</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var modal = document.getElementById("applicationModal");
+        var span = document.getElementsByClassName("close-btn")[0];
+    
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+    
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>

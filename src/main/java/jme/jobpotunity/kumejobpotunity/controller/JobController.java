@@ -1,3 +1,5 @@
+// src/main/java/jme/jobpotunity/kumejobpotunity/controller/JobController.java (Update)
+
 package jme.jobpotunity.kumejobpotunity.controller;
 
 import jme.jobpotunity.kumejobpotunity.entity.Company;
@@ -17,7 +19,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile; // Add this
+import java.io.IOException; // Add this
+import java.nio.file.Files; // Add this
+import java.nio.file.Path; // Add this
+import java.nio.file.Paths; // Add this
 import java.util.List;
+import java.util.UUID; // Add this
 
 @Controller
 public class JobController {
@@ -33,6 +41,9 @@ public class JobController {
 
     @Autowired
     private UserService userService;
+
+    // We'll create a new directory to store uploaded CVs
+    private static String UPLOADED_FOLDER = "uploads/cvs/";
 
     // ပင်မစာမျက်နှာနှင့် search functionality
     @GetMapping("/")
@@ -97,16 +108,49 @@ public class JobController {
         return "redirect:/job/" + id;
     }
 
-    // Job လျှောက်ထားမှုကို လက်ခံမည့် method
-    @PostMapping("/job/apply/{id}")
-    public String applyForJob(@PathVariable("id") Long jobId, Authentication authentication) {
-        String username = authentication.getName();
-        User user = userService.findByUsername(username)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    // Job လျှောက်ထားမှုကို လက်ခံမည့် method (Updated)
+    @PostMapping("/job/apply/{jobId}")
+    public String applyForJob(@PathVariable("jobId") Long jobId,
+                              @RequestParam("applicantName") String applicantName,
+                              @RequestParam("applicantEmail") String applicantEmail,
+                              @RequestParam("applicantPhone") String applicantPhone,
+                              @RequestParam("cvFile") MultipartFile cvFile,
+                              Authentication authentication) {
+        
+        try {
+            // Step 1: လက်ရှိ login ဝင်ထားသော user ကို ရယူသည်
+            String username = authentication.getName();
+            User user = userService.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            
+            // Step 2: လျှောက်ထားသော job ကို database မှ ရယူသည်
+            JobPosting job = jobPostingService.findById(jobId);
 
-        JobPosting job = jobPostingService.findById(jobId);
-        jobApplicationService.applyForJob(job, user);
+            // Step 3: CV file ကို server မှာ သိမ်းဆည်းသည်
+            byte[] bytes = cvFile.getBytes();
+            String originalFileName = cvFile.getOriginalFilename();
+            String fileExtension = "";
+            if (originalFileName != null && originalFileName.lastIndexOf(".") != -1) {
+                fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+            }
+            String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
+            
+            Path path = Paths.get(UPLOADED_FOLDER + uniqueFileName);
+            
+            // Ensure the directory exists
+            Files.createDirectories(path.getParent());
+            Files.write(path, bytes);
 
-        return "redirect:/job/" + jobId + "?applied";
+            // Step 4: service ကို ခေါ်ပြီး application ကို သိမ်းဆည်းသည်
+            String cvFilePath = path.toString();
+            jobApplicationService.applyForJob(job, user, applicantName, applicantEmail, applicantPhone, cvFilePath);
+
+            // လျှောက်လွှာတင်ပြီးပါက job details page ကို ပြန်ပို့သည်
+            return "redirect:/job/" + jobId + "?applied";
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "redirect:/job/" + jobId + "?error";
+        }
     }
 }
