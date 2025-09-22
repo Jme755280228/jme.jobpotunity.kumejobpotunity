@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="my" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'လျှောက်ထားသူများ: ' + ${job.title}"></title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: main-header}"></div>
+
+    <div class="container">
+        <h2 th:text="'လျှောက်ထားသူများ: ' + ${job.title}"></h2>
+        <a th:href="@{/admin/jobs}" class="btn btn-back">အလုပ်စာရင်းသို့ ပြန်သွားရန်</a>
+
+        <div th:if="${applications.isEmpty()}">
+            <p>ဤအလုပ်အတွက် လျှောက်ထားသူ မရှိသေးပါ</p>
+        </div>
+        
+        <div th:unless="${applications.isEmpty()}" class="applicants-list">
+            <div th:each="application : ${applications}" class="applicant-item">
+                <p><strong>လျှောက်ထားသူအမည်:</strong> <span th:text="${application.applicantName}"></span></p>
+                <p><strong>အီးမေးလ်:</strong> <span th:text="${application.applicantEmail}"></span></p>
+                <p><strong>ဖုန်းနံပါတ်:</strong> <span th:text="${application.applicantPhone}"></span></p>
+                <p><strong>လျှောက်ထားသည့်ရက်စွဲ:</strong> <span th:text="${application.applicationDate}"></span></p>
+                
+                <a th:if="${application.cvFilePath}" th:href="@{'/'+${application.cvFilePath}}" 
+                   class="btn btn-primary" target="_blank">CV ကြည့်ရန်</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

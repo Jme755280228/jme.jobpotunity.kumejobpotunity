@@ -1,11 +1,12 @@
 package jme.jobpotunity.kumejobpotunity.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class JobPosting {
@@ -17,28 +18,22 @@ public class JobPosting {
     private String title;
     private String description;
     private String location;
-
-    // အသစ်ထည့်လိုက်တဲ့ fields တွေ
     private String salary;
-    private String jobType; // ဥပမာ- အချိန်ပြည့်၊ အချိန်ပိုင်း
+    private String jobType;
+
+    // Use Boolean to allow for a null value, which is good for form binding
+    @Column(name = "is_cv_required")
+    private Boolean isCvRequired;
 
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
 
+    // Default constructor
     public JobPosting() {
     }
 
-    public JobPosting(String title, String description, String location, String salary, String jobType, Company company) {
-        this.title = title;
-        this.description = description;
-        this.location = location;
-        this.salary = salary;
-        this.jobType = jobType;
-        this.company = company;
-    }
-
-    // Getters and Setters for all fields
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -94,5 +89,13 @@ public class JobPosting {
     public void setCompany(Company company) {
         this.company = company;
     }
-}
 
+    // Correct Getter and Setter for the 'isCvRequired' field
+    public Boolean getIsCvRequired() {
+        return isCvRequired;
+    }
+
+    public void setIsCvRequired(Boolean isCvRequired) {
+        this.isCvRequired = isCvRequired;
+    }
+}

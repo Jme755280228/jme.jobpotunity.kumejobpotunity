@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="my" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: main-header}"></div>
+    
+    <div class="container">
+        <h2>အလုပ်များ စီမံခန့်ခွဲမှု</h2>
+        <a th:href="@{/newJob}" class="btn btn-primary btn-add-new-job">အလုပ်အသစ်တင်ရန်</a>
+
+        <div class="job-list">
+            <div th:each="job : ${jobPostings}" class="job-item">
+                <h3 th:text="${job.title}"></h3>
+                <p><strong>ကုမ္ပဏီ:</strong> <span th:text="${job.company.name}"></span></p>
+                <p><strong>တည်နေရာ:</strong> <span th:text="${job.location}"></span></p>
+                
+                <div class="job-actions">
+                    <a th:href="@{/job/{id}(id=${job.id})}" class="btn btn-view">အသေးစိတ်ကြည့်ရန်</a>
+                    <a th:href="@{/editJob/{id}(id=${job.id})}" class="btn btn-edit">ပြင်ဆင်ရန်</a>
+                    <a th:href="@{/deleteJob/{id}(id=${job.id})}" class="btn btn-delete"
+                       onclick="return confirm('သေချာပါသလား? ဖျက်လိုက်ရင် ပြန်ဖော်မရတော့ပါဘူး')">ဖျက်ပစ်ရန်</a>
+                    <a th:href="@{/admin/jobs/{id}/applicants(id=${job.id})}" class="btn btn-primary">လျှောက်ထားသူများကြည့်ရန်</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${job.title}"></title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
     <div th:replace="~{fragments/header :: main-header}"></div>
@@ -59,8 +60,10 @@
                 <label for="phone">ဖုန်းနံပါတ်:</label>
                 <input type="tel" id="phone" name="applicantPhone" required />
     
-                <label for="cv">CV တင်ရန်:</label>
-                <input type="file" id="cv" name="cvFile" accept=".pdf,.doc,.docx" required />
+                <div th:if="${job.isCvRequired()}">
+                    <label for="cv">CV တင်ရန်:</label>
+                    <input type="file" id="cv" name="cvFile" accept=".pdf,.doc,.docx" required />
+                </div>
     
                 <button type="submit" class="btn btn-apply-modal">လျှောက်လွှာတင်မည်</button>
             </form>

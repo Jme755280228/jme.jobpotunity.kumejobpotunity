@@ -11,8 +11,11 @@
                 <nav class="main-nav">
                     <ul>
                         <li><a th:href="@{/}">အိမ်</a></li>
-                        <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/newJob}">အလုပ်အသစ်တင်ရန်</a></li>
 
+                        <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/jobs}">စီမံခန့်ခွဲသူ စာမျက်နှာ</a></li>
+
+                        <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/newJob}">အလုပ်အသစ်တင်ရန်</a></li>
+                        
                         <li sec:authorize="isAuthenticated()">
                             <a th:href="@{/changePassword}">စကားဝှက် ပြောင်းလဲရန်</a>
                         </li>

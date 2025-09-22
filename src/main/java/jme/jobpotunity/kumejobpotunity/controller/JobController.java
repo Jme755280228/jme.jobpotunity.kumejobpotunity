@@ -2,6 +2,7 @@
 
 package jme.jobpotunity.kumejobpotunity.controller;
 
+import jme.jobpotunity.kumejobpotunity.entity.JobApplication;
 import jme.jobpotunity.kumejobpotunity.entity.Company;
 import jme.jobpotunity.kumejobpotunity.entity.JobPosting;
 import jme.jobpotunity.kumejobpotunity.entity.User;
@@ -100,6 +101,30 @@ public class JobController {
         return "redirect:/";
     }
 
+    // All jobs for admin dashboard
+    @GetMapping("/admin/jobs")
+    public String getAllJobs(Model model) {
+        List<JobPosting> jobPostings = jobPostingService.findAllJobPostings();
+        model.addAttribute("jobPostings", jobPostings);
+        return "admin-jobs";
+    }
+
+    
+// View all applicants for a specific job (for admin)
+@GetMapping("/admin/jobs/{jobId}/applicants")
+public String getApplicantsByJob(@PathVariable("jobId") Long jobId, Model model) {
+    JobPosting job = jobPostingService.findById(jobId);
+    if (job == null) {
+        return "redirect:/admin/jobs?error=jobNotFound";
+    }
+
+    List<JobApplication> applications = jobApplicationService.findApplicationsByJob(job);
+    model.addAttribute("job", job);
+    model.addAttribute("applications", applications);
+    return "job-applicants";
+}
+
+
     // ပြင်ဆင်လိုက်သော data များကို database ထဲသို့ သိမ်းဆည်းပေးမည့် method
     @PostMapping("/updateJob/{id}")
     public String updateJob(@PathVariable("id") Long id, @ModelAttribute("jobPosting") JobPosting jobPosting) {
@@ -109,12 +134,12 @@ public class JobController {
     }
 
     // Job လျှောက်ထားမှုကို လက်ခံမည့် method (Updated)
-    @PostMapping("/job/apply/{jobId}")
+   @PostMapping("/job/apply/{jobId}")
     public String applyForJob(@PathVariable("jobId") Long jobId,
                               @RequestParam("applicantName") String applicantName,
                               @RequestParam("applicantEmail") String applicantEmail,
                               @RequestParam("applicantPhone") String applicantPhone,
-                              @RequestParam("cvFile") MultipartFile cvFile,
+                              @RequestParam(value = "cvFile", required = false) MultipartFile cvFile,
                               Authentication authentication) {
         
         try {
@@ -125,24 +150,36 @@ public class JobController {
             
             // Step 2: လျှောက်ထားသော job ကို database မှ ရယူသည်
             JobPosting job = jobPostingService.findById(jobId);
+            
+            // CV လိုအပ် မလိုအပ် စစ်ဆေးသည်
+            String cvFilePath = null; // CV file path ကို default အဖြစ် null သတ်မှတ်ထားသည်
 
-            // Step 3: CV file ကို server မှာ သိမ်းဆည်းသည်
-            byte[] bytes = cvFile.getBytes();
-            String originalFileName = cvFile.getOriginalFilename();
-            String fileExtension = "";
-            if (originalFileName != null && originalFileName.lastIndexOf(".") != -1) {
-                fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+            if (job.getIsCvRequired() != null && job.getIsCvRequired()) {
+                // CV လိုအပ်လျှင်
+                if (cvFile == null || cvFile.isEmpty()) {
+                    // CV file မပါခဲ့ရင် error ပြန်ပို့မယ်
+                    return "redirect:/job/" + jobId + "?error=cvRequired";
+                }
+                
+                // CV file ကို server မှာ သိမ်းဆည်းသည်
+                String originalFileName = cvFile.getOriginalFilename();
+                String fileExtension = "";
+                if (originalFileName != null && originalFileName.lastIndexOf(".") != -1) {
+                    fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+                }
+                String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
+                
+                Path path = Paths.get(UPLOADED_FOLDER + uniqueFileName);
+                
+                // Ensure the directory exists
+                Files.createDirectories(path.getParent());
+                Files.write(path, cvFile.getBytes());
+                
+                cvFilePath = path.toString(); // file path ကို သတ်မှတ်သည်
             }
-            String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
             
-            Path path = Paths.get(UPLOADED_FOLDER + uniqueFileName);
-            
-            // Ensure the directory exists
-            Files.createDirectories(path.getParent());
-            Files.write(path, bytes);
-
-            // Step 4: service ကို ခေါ်ပြီး application ကို သိမ်းဆည်းသည်
-            String cvFilePath = path.toString();
+            // Step 3: service ကို ခေါ်ပြီး application ကို သိမ်းဆည်းသည်
+            // CV file မလိုရင် cvFilePath ဟာ null ဖြစ်နေမှာပါ
             jobApplicationService.applyForJob(job, user, applicantName, applicantEmail, applicantPhone, cvFilePath);
 
             // လျှောက်လွှာတင်ပြီးပါက job details page ကို ပြန်ပို့သည်

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class JobApplicationService {
@@ -29,4 +30,11 @@ public class JobApplicationService {
         
         jobApplicationRepository.save(jobApplication);
     }
+    
+     
+    // Find applications for a specific job
+    public List<JobApplication> findApplicationsByJob(JobPosting job) {
+        return jobApplicationRepository.findByJob(job);
+    }
+    
 }
