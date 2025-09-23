@@ -1,40 +1,31 @@
 <!DOCTYPE html>
 <html lang="my" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-    <meta charset="UTF-8">
-</head>
-<body>
-    <div th:fragment="main-header">
-        <header class="header">
-            <div class="container">
-                <a th:href="@{/}" class="logo"><i class="fas fa-briefcase"></i> ကူညီမှု အလုပ်အကိုင်ရှာဖွေရေး</a>
-                <nav class="main-nav">
-                    <ul>
-                        <li><a th:href="@{/}">အိမ်</a></li>
+<header th:fragment="main-header" class="main-header">
+    <div class="container">
+        <a th:href="@{/}" class="logo">
+            <i class="fas fa-briefcase"></i> J-Jobs
+        </a>
 
-                        <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/jobs}">စီမံခန့်ခွဲသူ စာမျက်နှာ</a></li>
+        <button class="menu-toggle" id="mobile-toggle-btn" aria-label="Toggle navigation">
+            <i class="fas fa-bars"></i>
+        </button>
 
-                        <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/newJob}">အလုပ်အသစ်တင်ရန်</a></li>
-                        
-                        <li sec:authorize="isAuthenticated()">
-                            <a th:href="@{/changePassword}">စကားဝှက် ပြောင်းလဲရန်</a>
-                        </li>
-                        <li sec:authorize="isAuthenticated()">
-                            <form th:action="@{/logout}" method="post">
-                                <button type="submit" class="logout-btn">ထွက်ရန်</button>
-                            </form>
-                        </li>
-
-                        <li sec:authorize="!isAuthenticated()">
-                            <a th:href="@{/register}">အကောင့်ဖွင့်ရန်</a>
-                        </li>
-                        <li sec:authorize="!isAuthenticated()">
-                            <a th:href="@{/login}">လော့ဂ်အင်</a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </header>
+        <nav class="main-nav" id="main-nav-menu">
+            <ul>
+                <li sec:authorize="!isAuthenticated()"><a th:href="@{/login}">လော့ဂ်အင်</a></li>
+                <li sec:authorize="!isAuthenticated()"><a th:href="@{/register}">အကောင့်ဖွင့်ရန်</a></li>
+                <li><a th:href="@{/}">အိမ်</a></li>
+                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/jobs}">စီမံခန့်ခွဲသူ စာမျက်နှာ</a></li>
+                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/newJob}">အလုပ်အသစ်တင်ရန်</a></li>
+                <li sec:authorize="isAuthenticated()"><a th:href="@{/changePassword}">စကားဝှက် ပြောင်းလဲရန်</a></li>
+                <li sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="logout-btn">ထွက်ရန်</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
     </div>
-</body>
+</header>
 </html>

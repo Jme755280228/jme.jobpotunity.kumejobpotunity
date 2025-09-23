@@ -1,55 +1,56 @@
 <!DOCTYPE html>
-<html lang="my" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="my" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>အလုပ်အသစ်တင်ရန်</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
-  
-  <div th:replace="~{fragments/header :: main-header}"></div>
-  
-    <div class="form-container">
-        <h2>အလုပ်အသစ်တင်ရန်</h2>
-        <form action="#" th:action="@{/saveJob}" th:object="${jobPosting}" method="post">
-            <div class="form-group">
-                <label for="title">ရာထူး</label>
-                <input type="text" id="title" th:field="*{title}" required>
-            </div>
-            <div class="form-group">
-                <label for="description">အလုပ်ဖော်ပြချက်</label>
-                <textarea id="description" th:field="*{description}" required></textarea>
-            </div>
-            <div class="form-group">
-                <label for="location">တည်နေရာ</label>
-                <input type="text" id="location" th:field="*{location}" required>
-            </div>
-            <div class="form-group">
-                <label for="salary">လစာ</label>
-                <input type="text" id="salary" th:field="*{salary}" required>
-            </div>
-            <div class="form-group">
-                <label for="jobType">အလုပ်အမျိုးအစား</label>
-                <input type="text" id="jobType" th:field="*{jobType}" required>
-            </div>
-            <div class="form-group">
-                <label for="company">ကုမ္ပဏီ</label>
-                <select id="company" th:field="*{company}" required>
-                    <option value="">ကုမ္ပဏီတစ်ခုရွေးပါ</option>
-                    <option th:each="company : ${companies}" th:value="${company.id}" th:text="${company.name}"></option>
-                </select>
-            </div>
-            <div class="form-group">
-                <input type="checkbox" id="isCvRequired" th:field="*{isCvRequired}" />
-                <label for="isCvRequired">လျှောက်လွှာတွင် CV လိုအပ်ပါသလား?</label>
-            </div>
-            
-            <div class="form-actions">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button type="submit">တင်ရန်</button>
-            </div>
-        </form>
+    <div th:replace="~{fragments/header :: main-header}"></div>
+
+    <div class="container my-5">
+        <div class="form-container">
+            <h2 class="section-title">အလုပ်အသစ်တင်ရန်</h2>
+            <form th:action="@{/saveJob}" th:object="${jobPosting}" method="post">
+                <div class="form-group">
+                    <label for="title">ရာထူး</label>
+                    <input type="text" id="title" th:field="*{title}" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">အလုပ်ဖော်ပြချက်</label>
+                    <textarea id="description" th:field="*{description}" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="companyName">ကုမ္ပဏီ</label>
+                    <input type="text" id="companyName" name="companyName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="location">တည်နေရာ</label>
+                    <input type="text" id="location" th:field="*{location}" required>
+                </div>
+                <div class="form-group">
+                    <label for="salary">လစာ</label>
+                    <input type="text" id="salary" th:field="*{salary}">
+                </div>
+                <div class="form-group">
+                    <label for="jobType">အလုပ်အမျိုးအစား</label>
+                    <input type="text" id="jobType" th:field="*{jobType}" required>
+                </div>
+                <div class="form-group">
+                    <label for="isCvRequired">
+                        လျှောက်လွှာတွင် CV လိုအပ်ပါသလား?
+                        <input type="checkbox" id="isCvRequired" th:field="*{isCvRequired}">
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit">အလုပ်တင်မည်</button>
+                </div>
+            </form>
+        </div>
     </div>
+    <div th:replace="~{fragments/footer :: main-footer}"></div>
 </body>
 </html>

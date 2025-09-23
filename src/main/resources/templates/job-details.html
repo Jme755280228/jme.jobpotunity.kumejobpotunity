@@ -60,7 +60,7 @@
                 <label for="phone">ဖုန်းနံပါတ်:</label>
                 <input type="tel" id="phone" name="applicantPhone" required />
     
-                <div th:if="${job.isCvRequired()}">
+                <div th:if="${job.getIsCvRequired()}">
                     <label for="cv">CV တင်ရန်:</label>
                     <input type="file" id="cv" name="cvFile" accept=".pdf,.doc,.docx" required />
                 </div>

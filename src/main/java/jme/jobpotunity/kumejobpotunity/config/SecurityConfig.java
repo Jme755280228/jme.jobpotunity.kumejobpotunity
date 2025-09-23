@@ -23,7 +23,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
             .authorizeHttpRequests(authorize -> authorize
                 // Public ဝင်ခွင့်ရှိတဲ့ pages တွေ
-                .requestMatchers("/", "/register", "/css/**", "/job/{id}", "/uploads/**").permitAll()
+                .requestMatchers("/", "/register", "/css/**","/js/**", "/job/{id}", "/uploads/**").permitAll()
                 // Admin role ရှိမှ ဝင်ခွင့်ရှိတဲ့ pages တွေ
                 .requestMatchers("/newJob", "/saveJob", "/editJob/{id}", "/updateJob/{id}", "/deleteJob/{id}", "/admin/**").hasRole("ADMIN")
                 // User role ရှိမှ ဝင်ခွင့်ရှိတဲ့ pages တွေ

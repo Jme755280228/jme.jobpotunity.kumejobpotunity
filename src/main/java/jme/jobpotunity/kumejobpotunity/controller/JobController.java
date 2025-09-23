@@ -1,5 +1,3 @@
-// src/main/java/jme/jobpotunity/kumejobpotunity/controller/JobController.java (Update)
-
 package jme.jobpotunity.kumejobpotunity.controller;
 
 import jme.jobpotunity.kumejobpotunity.entity.JobApplication;
@@ -20,13 +18,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile; // Add this
-import java.io.IOException; // Add this
-import java.nio.file.Files; // Add this
-import java.nio.file.Path; // Add this
-import java.nio.file.Paths; // Add this
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID; // Add this
+import java.util.Optional;
+import java.util.UUID;
 
 @Controller
 public class JobController {
@@ -43,10 +42,8 @@ public class JobController {
     @Autowired
     private UserService userService;
 
-    // We'll create a new directory to store uploaded CVs
     private static String UPLOADED_FOLDER = "uploads/cvs/";
 
-    // ပင်မစာမျက်နှာနှင့် search functionality
     @GetMapping("/")
     public String viewHomePage(@RequestParam(value = "query", required = false) String query, Model model) {
         List<JobPosting> jobPostings;
@@ -59,24 +56,42 @@ public class JobController {
         return "index";
     }
 
-    // အလုပ်အသစ်တင်ရန် form ကို ပြသပေးမည့် method
     @GetMapping("/newJob")
     public String showNewJobForm(Model model) {
         JobPosting jobPosting = new JobPosting();
         model.addAttribute("jobPosting", jobPosting);
-        List<Company> companies = companyService.findAllCompanies();
-        model.addAttribute("companies", companies);
+        // Companies list is no longer needed for a dropdown
         return "new-job";
     }
 
-    // Form မှ data များကို လက်ခံပြီး database ထဲသို့ သိမ်းဆည်းပေးမည့် method
+    // New POST method to handle job creation with a text input for company name
     @PostMapping("/saveJob")
-    public String saveJob(@ModelAttribute("jobPosting") JobPosting jobPosting) {
+    public String saveJob(@ModelAttribute("jobPosting") JobPosting jobPosting,
+                          @RequestParam("companyName") String companyName) {
+        
+        // 1. Check if the company already exists by name
+        Optional<Company> existingCompany = companyService.findByName(companyName);
+        Company company;
+        
+        if (existingCompany.isPresent()) {
+            // 2. If it exists, use the existing company
+            company = existingCompany.get();
+        } else {
+            // 3. If it doesn't exist, create a new company entity and save it
+            company = new Company();
+            company.setName(companyName);
+            company = companyService.save(company);
+        }
+        
+        // 4. Link the job posting to the company
+        jobPosting.setCompany(company);
+        
+        // 5. Save the final job posting
         jobPostingService.saveJobPosting(jobPosting);
+        
         return "redirect:/";
     }
 
-    // Job တစ်ခုချင်းစီ၏ အသေးစိတ်ကို ပြသပေးမည့် method
     @GetMapping("/job/{id}")
     public String showJobDetails(@PathVariable("id") Long id, Model model) {
         JobPosting job = jobPostingService.findById(id);
@@ -84,24 +99,20 @@ public class JobController {
         return "job-details";
     }
 
-    // Job ကို ပြင်ဆင်ရန် form ကို ပြသပေးမည့် method
     @GetMapping("/editJob/{id}")
     public String showEditJobForm(@PathVariable("id") Long id, Model model) {
         JobPosting jobPosting = jobPostingService.findById(id);
         model.addAttribute("jobPosting", jobPosting);
-        List<Company> companies = companyService.findAllCompanies();
-        model.addAttribute("companies", companies);
+        // You may want to add companies here if you want a dropdown for editing
         return "edit-job";
     }
 
-    // Job တစ်ခုကို ဖျက်ပစ်မည့် method
     @GetMapping("/deleteJob/{id}")
     public String deleteJob(@PathVariable("id") Long id) {
         jobPostingService.deleteJobPosting(id);
         return "redirect:/";
     }
 
-    // All jobs for admin dashboard
     @GetMapping("/admin/jobs")
     public String getAllJobs(Model model) {
         List<JobPosting> jobPostings = jobPostingService.findAllJobPostings();
@@ -109,23 +120,19 @@ public class JobController {
         return "admin-jobs";
     }
 
-    
-// View all applicants for a specific job (for admin)
-@GetMapping("/admin/jobs/{jobId}/applicants")
-public String getApplicantsByJob(@PathVariable("jobId") Long jobId, Model model) {
-    JobPosting job = jobPostingService.findById(jobId);
-    if (job == null) {
-        return "redirect:/admin/jobs?error=jobNotFound";
+    @GetMapping("/admin/jobs/{jobId}/applicants")
+    public String getApplicantsByJob(@PathVariable("jobId") Long jobId, Model model) {
+        JobPosting job = jobPostingService.findById(jobId);
+        if (job == null) {
+            return "redirect:/admin/jobs?error=jobNotFound";
+        }
+
+        List<JobApplication> applications = jobApplicationService.findApplicationsByJob(job);
+        model.addAttribute("job", job);
+        model.addAttribute("applications", applications);
+        return "job-applicants";
     }
 
-    List<JobApplication> applications = jobApplicationService.findApplicationsByJob(job);
-    model.addAttribute("job", job);
-    model.addAttribute("applications", applications);
-    return "job-applicants";
-}
-
-
-    // ပြင်ဆင်လိုက်သော data များကို database ထဲသို့ သိမ်းဆည်းပေးမည့် method
     @PostMapping("/updateJob/{id}")
     public String updateJob(@PathVariable("id") Long id, @ModelAttribute("jobPosting") JobPosting jobPosting) {
         jobPosting.setId(id);
@@ -133,8 +140,7 @@ public String getApplicantsByJob(@PathVariable("jobId") Long jobId, Model model)
         return "redirect:/job/" + id;
     }
 
-    // Job လျှောက်ထားမှုကို လက်ခံမည့် method (Updated)
-   @PostMapping("/job/apply/{jobId}")
+    @PostMapping("/job/apply/{jobId}")
     public String applyForJob(@PathVariable("jobId") Long jobId,
                               @RequestParam("applicantName") String applicantName,
                               @RequestParam("applicantEmail") String applicantEmail,
@@ -143,25 +149,18 @@ public String getApplicantsByJob(@PathVariable("jobId") Long jobId, Model model)
                               Authentication authentication) {
         
         try {
-            // Step 1: လက်ရှိ login ဝင်ထားသော user ကို ရယူသည်
             String username = authentication.getName();
             User user = userService.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
             
-            // Step 2: လျှောက်ထားသော job ကို database မှ ရယူသည်
             JobPosting job = jobPostingService.findById(jobId);
             
-            // CV လိုအပ် မလိုအပ် စစ်ဆေးသည်
-            String cvFilePath = null; // CV file path ကို default အဖြစ် null သတ်မှတ်ထားသည်
-
+            String cvFilePath = null;
             if (job.getIsCvRequired() != null && job.getIsCvRequired()) {
-                // CV လိုအပ်လျှင်
                 if (cvFile == null || cvFile.isEmpty()) {
-                    // CV file မပါခဲ့ရင် error ပြန်ပို့မယ်
                     return "redirect:/job/" + jobId + "?error=cvRequired";
                 }
                 
-                // CV file ကို server မှာ သိမ်းဆည်းသည်
                 String originalFileName = cvFile.getOriginalFilename();
                 String fileExtension = "";
                 if (originalFileName != null && originalFileName.lastIndexOf(".") != -1) {
@@ -171,18 +170,14 @@ public String getApplicantsByJob(@PathVariable("jobId") Long jobId, Model model)
                 
                 Path path = Paths.get(UPLOADED_FOLDER + uniqueFileName);
                 
-                // Ensure the directory exists
                 Files.createDirectories(path.getParent());
                 Files.write(path, cvFile.getBytes());
                 
-                cvFilePath = path.toString(); // file path ကို သတ်မှတ်သည်
+                cvFilePath = path.toString();
             }
             
-            // Step 3: service ကို ခေါ်ပြီး application ကို သိမ်းဆည်းသည်
-            // CV file မလိုရင် cvFilePath ဟာ null ဖြစ်နေမှာပါ
             jobApplicationService.applyForJob(job, user, applicantName, applicantEmail, applicantPhone, cvFilePath);
 
-            // လျှောက်လွှာတင်ပြီးပါက job details page ကို ပြန်ပို့သည်
             return "redirect:/job/" + jobId + "?applied";
 
         } catch (IOException e) {
