@@ -4,8 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>အလုပ်အကိုင်ရှာဖွေရေး</title>
+     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+   
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+   
 </head>
 
 <body>
@@ -73,12 +78,9 @@
             </div>
         </div>
     </section>
-
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2024 Kume Job Portal. All rights reserved.</p>
-        </div>
-    </footer>
+<div th:replace="~{fragments/footer :: main-footer}"></div>
+   
+     <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
     <script src="/js/main.js"></script>
 
 </body>

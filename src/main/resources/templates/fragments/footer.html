@@ -1,8 +1,44 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="main-footer" class="footer">
-    <div class="container">
-        <p>&copy; 2025 Kume Job Opportunity. All Rights Reserved.</p>
+<html lang="my" xmlns:th="http://www.thymeleaf.org">
+<footer th:fragment="main-footer" class="footer">
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <h5 class="text-white mb-3">မြန်ဂျော့</h5>
+                <p class="text-white-50">
+                    သင့်ရဲ့ အိပ်မက်အလုပ်ကို အမြန်ဆုံးရှာဖွေနိုင်ဖို့ ကူညီပေးနေပါတယ်။
+                </p>
+                <div class="social-links mt-3">
+                    <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3 mb-md-0">
+                <h5 class="text-white mb-3">အမြန်သွားရန်</h5>
+                <ul class="list-unstyled">
+                    <li><a th:href="@{/}" class="text-white-50 text-decoration-none">အိမ်</a></li>
+                    <li><a th:href="@{/about}" class="text-white-50 text-decoration-none">ကျွန်ုပ်တို့အကြောင်း</a></li>
+                    <li><a th:href="@{/contact}" class="text-white-50 text-decoration-none">ဆက်သွယ်ရန်</a></li>
+                </ul>
+            </div>
+
+            <div class="col-md-3">
+                <h5 class="text-white mb-3">Developers</h5>
+                <ul class="list-unstyled">
+                    <li><a href="https://github.com/yourprofile" target="_blank" class="text-white-50 text-decoration-none">GitHub</a></li>
+                    <li><a href="https://linkedin.com/in/yourprofile" target="_blank" class="text-white-50 text-decoration-none">LinkedIn</a></li>
+                    <li><a href="https://yourportfolio.com" target="_blank" class="text-white-50 text-decoration-none">Portfolio</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <hr class="my-4 border-white-50">
+        
+        <div class="text-center text-white-50">
+            <p class="mb-0">&copy; 2025 မြန်ဂျော့. All Rights Reserved.</p>
+        </div>
     </div>
-</div>
+</footer>
 </html>

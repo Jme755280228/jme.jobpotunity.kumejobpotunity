@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="'လျှောက်ထားသူများ: ' + ${job.title}"></title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
@@ -18,16 +21,18 @@
         </div>
         
         <div th:unless="${applications.isEmpty()}" class="applicants-list">
-            <div th:each="application : ${applications}" class="applicant-item">
-                <p><strong>လျှောက်ထားသူအမည်:</strong> <span th:text="${application.applicantName}"></span></p>
-                <p><strong>အီးမေးလ်:</strong> <span th:text="${application.applicantEmail}"></span></p>
-                <p><strong>ဖုန်းနံပါတ်:</strong> <span th:text="${application.applicantPhone}"></span></p>
-                <p><strong>လျှောက်ထားသည့်ရက်စွဲ:</strong> <span th:text="${application.applicationDate}"></span></p>
+            <!-- Iteration variable ကို 'applicant' သို့ ပြောင်းပြီး -->
+            <div th:each="applicant : ${applications}" class="applicant-item">
+                <p><strong>လျှောက်ထားသူအမည်:</strong> <span th:text="${applicant.applicantName}"></span></p>
+                <p><strong>အီးမေးလ်:</strong> <span th:text="${applicant.applicantEmail}"></span></p>
+                <p><strong>ဖုန်းနံပါတ်:</strong> <span th:text="${applicant.applicantPhone}"></span></p>
+                <p><strong>လျှောက်ထားသည့်ရက်စွဲ:</strong> <span th:text="${applicant.applicationDate}"></span></p>
                 
-                <a th:if="${application.cvFilePath}" th:href="@{'/'+${application.cvFilePath}}" 
+                <a th:if="${applicant.cvFilePath}" th:href="@{'/'+${applicant.cvFilePath}}" 
                    class="btn btn-primary" target="_blank">CV ကြည့်ရန်</a>
             </div>
         </div>
     </div>
+    <div th:replace="~{fragments/footer :: main-footer}"></div>
 </body>
 </html>

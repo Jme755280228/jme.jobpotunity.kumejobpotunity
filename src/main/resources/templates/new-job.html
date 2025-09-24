@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <title>အလုပ်အသစ်တင်ရန်</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+   
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+   
 </head>
 <body>
     <div th:replace="~{fragments/header :: main-header}"></div>
@@ -52,5 +56,6 @@
         </div>
     </div>
     <div th:replace="~{fragments/footer :: main-footer}"></div>
+    
 </body>
 </html>
