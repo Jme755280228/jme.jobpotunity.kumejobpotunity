@@ -1,5 +1,3 @@
-// src/main/java/jme/jobpotunity/kumejobpotunity/entity/User.java
-
 package jme.jobpotunity.kumejobpotunity.entity;
 
 import jakarta.persistence.*;
@@ -18,9 +16,16 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    // Role ကို "ADMIN", "USER", "EMPLOYER" တွေအတွက် လက်ခံနိုင်ရန်
     @Column(nullable = false)
-    private String role; // "ADMIN" or "USER"
+    private String role; 
 
+    // Data-Centric Change: User Account တစ်ခုသည် Applicant Profile တစ်ခုနှင့်သာ သက်ဆိုင်သည်
+    // mappedBy = "user" သည် ApplicantProfile Entity မှ ချိတ်ဆက်မှုကို ပြန်ညွှန်းသည်
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ApplicantProfile applicantProfile; // <<<<< Field အသစ်
+
+    // --- 1. Constructors ---
     public User() {
     }
 
@@ -30,7 +35,7 @@ public class User {
         this.role = role;
     }
 
-    // Getters and Setters
+    // --- 2. Getters and Setters ---
     public Long getId() {
         return id;
     }
@@ -61,5 +66,14 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    // New Getter and Setter for ApplicantProfile
+    public ApplicantProfile getApplicantProfile() {
+        return applicantProfile;
+    }
+
+    public void setApplicantProfile(ApplicantProfile applicantProfile) {
+        this.applicantProfile = applicantProfile;
     }
 }

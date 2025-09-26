@@ -21,19 +21,24 @@ public class JobPosting {
     private String salary;
     private String jobType;
 
-    // Use Boolean to allow for a null value, which is good for form binding
     @Column(name = "is_cv_required")
     private Boolean isCvRequired;
+
+    // Data Ownership Change: Job Posting တင်သူ (Employer Role ရှိသော User)
+    @ManyToOne
+    @JoinColumn(name = "employer_user_id", nullable = false)
+    private User employerUser; // <<<<< Field အသစ်
 
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
 
-    // Default constructor
+    // --- 1. Constructors ---
     public JobPosting() {
     }
 
-    // Getters and Setters
+    // --- 2. Getters and Setters ---
+
     public Long getId() {
         return id;
     }
@@ -90,12 +95,20 @@ public class JobPosting {
         this.company = company;
     }
 
-    // Correct Getter and Setter for the 'isCvRequired' field
     public Boolean getIsCvRequired() {
         return isCvRequired;
     }
 
     public void setIsCvRequired(Boolean isCvRequired) {
         this.isCvRequired = isCvRequired;
+    }
+
+    // New Getter and Setter for employerUser
+    public User getEmployerUser() {
+        return employerUser;
+    }
+
+    public void setEmployerUser(User employerUser) {
+        this.employerUser = employerUser;
     }
 }

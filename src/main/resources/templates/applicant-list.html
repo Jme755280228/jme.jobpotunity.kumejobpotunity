@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Applicants for: ' + ${job.title}">Applicants List</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="container">
+    <p>
+        <a th:href="@{/employer/jobs}" class="btn btn-secondary btn-sm">← Back to Job List</a>
+    </p>
+
+    <h1 th:text="${job.title}">Job Title</h1>
+    <h2 th:text="'Total Applications: ' + ${applications.size()}">Total Applications: 0</h2>
+
+    <div th:if="${applications.isEmpty()}" class="alert alert-warning">
+        No applicants have applied for this job yet.
+    </div>
+
+    <table class="table" th:unless="${applications.isEmpty()}">
+        <thead>
+            <tr>
+                <th>Applicant Name (User)</th>
+                <th>Application Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="app : ${applications}">
+                
+                <td th:text="${app.user.username}">applicant@example.com</td>
+                
+                <td th:text="${#temporals.format(app.applicationDate, 'dd MMM yyyy')}">01 Jan 2024</td>
+                
+                <td>
+                    <span th:text="${app.status}">APPLIED</span>
+                    </td>
+                
+                <td>
+                    <a th:href="@{'/employer/applications/' + ${app.id} + '/profile'}" class="btn btn-sm btn-primary">
+                        View Profile (CV Data)
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Applicant Profile</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="container">
+    <h1>Your Professional Profile</h1>
+    <p>Please provide your structured data. This will be used instead of a CV file.</p>
+    
+    <form th:action="@{/profile/save}" th:object="${profile}" method="post">
+        
+        <input type="hidden" th:field="*{id}" />
+        <input type="hidden" th:field="*{user}" /> 
+        
+        <h2>2. Work Experience</h2>
+        <div id="experience-container">
+            <div th:each="experience, iterStat : *{jobExperiences}" class="experience-entry" th:id="'exp-' + ${iterStat.index}">
+                <hr>
+                <input type="hidden" th:field="*{jobExperiences[__${iterStat.index}__].id}" />
+                
+                <div class="form-group">
+                    <label>Company</label>
+                    <input type="text" th:field="*{jobExperiences[__${iterStat.index}__].companyName}" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Job Title</label>
+                    <input type="text" th:field="*{jobExperiences[__${iterStat.index}__].jobTitle}" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Duration (e.g., 2020 - 2023)</label>
+                    <input type="text" th:field="*{jobExperiences[__${iterStat.index}__].duration}" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Responsibilities/Achievements</label>
+                    <textarea th:field="*{jobExperiences[__${iterStat.index}__].description}" class="form-control" rows="3"></textarea>
+                </div>
+                <button type="button" onclick="removeExperience(this)">Remove</button>
+            </div>
+        </div>
+        <button type="button" onclick="addExperience()">+ Add Work Experience</button>
+        
+        <h2>3. Education</h2>
+        <div id="education-container">
+            <div th:each="education, iterStat : *{educationList}" class="education-entry" th:id="'edu-' + ${iterStat.index}">
+                <hr>
+                <input type="hidden" th:field="*{educationList[__${iterStat.index}__].id}" />
+                
+                <div class="form-group">
+                    <label>Degree/Certification</label>
+                    <input type="text" th:field="*{educationList[__${iterStat.index}__].degree}" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Institution Name</label>
+                    <input type="text" th:field="*{educationList[__${iterStat.index}__].institution}" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Completion Year</label>
+                    <input type="number" th:field="*{educationList[__${iterStat.index}__].completionYear}" class="form-control" min="1900">
+                </div>
+                <button type="button" onclick="removeEducation(this)">Remove</button>
+            </div>
+        </div>
+        <button type="button" onclick="addEducation()">+ Add Education</button>
+
+        <button type="submit" class="btn btn-primary mt-4">Save Complete Profile</button>
+    </form>
+</div>
+
+<script th:src="@{/js/profile-form-logic.js}"></script>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Profile of ' + ${profile.fullName}">Applicant Profile View</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .profile-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .detail-item { margin-bottom: 10px; }
+        .experience-entry, .education-entry { border-left: 3px solid #007bff; padding-left: 15px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <p>
+        <a th:href="@{'/employer/jobs/' + ${application.job.id} + '/applicants'}" class="btn btn-secondary btn-sm">← Back to Applicants List</a>
+    </p>
+
+    <h1 th:text="${profile.fullName}">Applicant Name</h1>
+    <h2 th:text="${profile.currentTitle}">Current Title</h2>
+    <hr>
+
+    <div class="profile-section">
+        <h3>1. Personal Details</h3>
+        <p th:text="${profile.professionalSummary}">[Professional Summary]</p>
+        
+        <div class="detail-item"><strong>Email:</strong> <span th:text="${profile.email}"></span></div>
+        <div class="detail-item"><strong>Phone:</strong> <span th:text="${profile.phone}"></span></div>
+        <div class="detail-item"><strong>Total Exp (Yrs):</strong> <span th:text="${profile.totalExperienceYears}"></span></div>
+        <div class="detail-item"><strong>LinkedIn:</strong> <a th:href="${profile.linkedInUrl}" th:text="${profile.linkedInUrl}"></a></div>
+        <div class="detail-item"><strong>Key Skills:</strong> <span th:text="${profile.skills}"></span></div>
+    </div>
+
+    <div class="profile-section">
+        <h3>2. Work Experience</h3>
+        <div th:if="${profile.jobExperiences.isEmpty()}">No work experience provided.</div>
+        
+        <div th:each="exp : ${profile.jobExperiences}" class="experience-entry">
+            <h4 th:text="${exp.jobTitle}">Job Title</h4>
+            <div class="detail-item"><strong>Company:</strong> <span th:text="${exp.companyName}"></span></div>
+            <div class="detail-item"><strong>Duration:</strong> <span th:text="${exp.duration}"></span></div>
+            <p><strong>Responsibilities:</strong> <span th:text="${exp.description}"></span></p>
+        </div>
+    </div>
+
+    <div class="profile-section">
+        <h3>3. Education</h3>
+        <div th:if="${profile.educationList.isEmpty()}">No education history provided.</div>
+        
+        <div th:each="edu : ${profile.educationList}" class="education-entry">
+            <h4 th:text="${edu.degree}">Degree</h4>
+            <div class="detail-item"><strong>Institution:</strong> <span th:text="${edu.institution}"></span></div>
+            <div class="detail-item"><strong>Completed:</strong> <span th:text="${edu.completionYear}"></span></div>
+        </div>
+    </div>
+    
+    <div class="profile-section">
+        <h3>Application Status</h3>
+        <p><strong>Status:</strong> <span th:text="${application.status}">APPLIED</span></p>
+        </div>
+
+</div>
+
+</body>
+</html>

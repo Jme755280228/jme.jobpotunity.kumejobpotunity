@@ -1,188 +1,164 @@
 package jme.jobpotunity.kumejobpotunity.controller;
 
-import jme.jobpotunity.kumejobpotunity.entity.JobApplication;
-import jme.jobpotunity.kumejobpotunity.entity.Company;
+import jme.jobpotunity.kumejobpotunity.entity.ApplicantProfile;
 import jme.jobpotunity.kumejobpotunity.entity.JobPosting;
 import jme.jobpotunity.kumejobpotunity.entity.User;
-import jme.jobpotunity.kumejobpotunity.service.CompanyService;
 import jme.jobpotunity.kumejobpotunity.service.JobApplicationService;
-import jme.jobpotunity.kumejobpotunity.service.JobPostingService;
+import jme.jobpotunity.kumejobpotunity.service.ApplicantProfileService;
 import jme.jobpotunity.kumejobpotunity.service.UserService;
+import jme.jobpotunity.kumejobpotunity.service.JobPostingService; 
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import org.springframework.web.bind.annotation.ModelAttribute; // Form တွေအတွက် လိုအပ်
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.security.Principal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Controller
 public class JobController {
 
-    @Autowired
-    private CompanyService companyService;
+    private final JobApplicationService jobApplicationService;
+    private final ApplicantProfileService applicantProfileService;
+    private final UserService userService;
+    private final JobPostingService jobPostingService; 
 
     @Autowired
-    private JobPostingService jobPostingService;
-
-    @Autowired
-    private JobApplicationService jobApplicationService;
-
-    @Autowired
-    private UserService userService;
-
-    private static String UPLOADED_FOLDER = "uploads/cvs/";
-
-    @GetMapping("/")
-    public String viewHomePage(@RequestParam(value = "query", required = false) String query, Model model) {
-        List<JobPosting> jobPostings;
-        if (query != null && !query.isEmpty()) {
-            jobPostings = jobPostingService.searchJobPostings(query);
-        } else {
-            jobPostings = jobPostingService.findAllJobPostings();
-        }
-        model.addAttribute("jobPostings", jobPostings);
-        return "index";
+    public JobController(JobApplicationService jobApplicationService, 
+                         ApplicantProfileService applicantProfileService, 
+                         UserService userService,
+                         JobPostingService jobPostingService) {
+        this.jobApplicationService = jobApplicationService;
+        this.applicantProfileService = applicantProfileService;
+        this.userService = userService;
+        this.jobPostingService = jobPostingService;
     }
 
-    @GetMapping("/newJob")
-    public String showNewJobForm(Model model) {
-        JobPosting jobPosting = new JobPosting();
-        model.addAttribute("jobPosting", jobPosting);
-        // Companies list is no longer needed for a dropdown
-        return "new-job";
+    // --- 1. Public Job Listing & Detail ---
+    
+    @GetMapping({"/", "/jobs"})
+    public String listJobs(Model model) {
+        List<JobPosting> jobs = jobPostingService.findAll();
+        model.addAttribute("jobs", jobs);
+        return "job-listing";
     }
-
-    // New POST method to handle job creation with a text input for company name
-    @PostMapping("/saveJob")
-    public String saveJob(@ModelAttribute("jobPosting") JobPosting jobPosting,
-                          @RequestParam("companyName") String companyName) {
-        
-        // 1. Check if the company already exists by name
-        Optional<Company> existingCompany = companyService.findByName(companyName);
-        Company company;
-        
-        if (existingCompany.isPresent()) {
-            // 2. If it exists, use the existing company
-            company = existingCompany.get();
-        } else {
-            // 3. If it doesn't exist, create a new company entity and save it
-            company = new Company();
-            company.setName(companyName);
-            company = companyService.save(company);
-        }
-        
-        // 4. Link the job posting to the company
-        jobPosting.setCompany(company);
-        
-        // 5. Save the final job posting
-        jobPostingService.saveJobPosting(jobPosting);
-        
-        return "redirect:/";
-    }
-
+    
     @GetMapping("/job/{id}")
-    public String showJobDetails(@PathVariable("id") Long id, Model model) {
-        JobPosting job = jobPostingService.findById(id);
-        model.addAttribute("job", job);
+    public String jobDetails(@PathVariable Long id, Model model) {
+        Optional<JobPosting> jobOptional = jobPostingService.findById(id); 
+        if (jobOptional.isEmpty()) {
+            return "redirect:/jobs"; 
+        }
+        model.addAttribute("job", jobOptional.get());
         return "job-details";
     }
 
-    @GetMapping("/editJob/{id}")
-    public String showEditJobForm(@PathVariable("id") Long id, Model model) {
-        JobPosting jobPosting = jobPostingService.findById(id);
-        model.addAttribute("jobPosting", jobPosting);
-        // You may want to add companies here if you want a dropdown for editing
-        return "edit-job";
-    }
 
-    @GetMapping("/deleteJob/{id}")
-    public String deleteJob(@PathVariable("id") Long id) {
-        jobPostingService.deleteJobPosting(id);
-        return "redirect:/";
-    }
+    // --- 2. JOB APPLY LOGIC (Data-Centric Flow) ---
 
-    @GetMapping("/admin/jobs")
-    public String getAllJobs(Model model) {
-        List<JobPosting> jobPostings = jobPostingService.findAllJobPostings();
-        model.addAttribute("jobPostings", jobPostings);
-        return "admin-jobs";
-    }
+    @PostMapping("/job/apply/{jobId}")
+    public String applyForJob(@PathVariable Long jobId, 
+                              Principal principal,
+                              RedirectAttributes redirectAttributes) {
+        
+        User user = userService.findByUsername(principal.getName())
+                        .orElseThrow(() -> new IllegalStateException("Login user not found."));
 
-    @GetMapping("/admin/jobs/{jobId}/applicants")
-    public String getApplicantsByJob(@PathVariable("jobId") Long jobId, Model model) {
-        JobPosting job = jobPostingService.findById(jobId);
-        if (job == null) {
-            return "redirect:/admin/jobs?error=jobNotFound";
+        JobPosting job = jobPostingService.findById(jobId)
+                        .orElseThrow(() -> new IllegalArgumentException("Invalid job ID."));
+        
+        Optional<ApplicantProfile> profileOptional = applicantProfileService.getProfileByUser(user);
+
+        if (profileOptional.isEmpty()) {
+            // Profile မရှိပါက Form ဖြည့်ရန် /profile/edit သို့ Redirect လုပ်ခြင်း
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Your profile is incomplete. Please fill out your profile details before applying.");
+            return "redirect:/profile/edit"; 
         }
 
-        List<JobApplication> applications = jobApplicationService.findApplicationsByJob(job);
-        model.addAttribute("job", job);
-        model.addAttribute("applications", applications);
-        return "job-applicants";
+        ApplicantProfile applicantProfile = profileOptional.get();
+        try {
+            jobApplicationService.applyForJob(job, user, applicantProfile);
+            redirectAttributes.addFlashAttribute("successMessage", "Successfully applied for the job!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Application failed: " + e.getMessage());
+        }
+
+        return "redirect:/job/" + jobId; 
+    }
+    
+    
+    // --- 3. EMPLOYER/ADMIN JOB MANAGEMENT FUNCTIONS (မူရင်းကုဒ်များ) ---
+    // Spring Security ဖြင့် ADMIN သို့မဟုတ် EMPLOYER Role များဖြင့် ကာကွယ်ထားသည်။
+
+    /**
+     * Job အသစ်တင်ရန် Form ကို ပြသခြင်း (ADMIN/EMPLOYER ဝင်ခွင့်ရှိရမည်)
+     * URL: /newJob
+     */
+    @GetMapping("/newJob")
+    public String showNewJobForm(Model model) {
+        model.addAttribute("jobPosting", new JobPosting());
+        // Company List ကိုလည်း Model ထဲ ထည့်ပေးရန် လိုအပ်နိုင်
+        return "job-form"; // Job တင်ရန် Form Template
     }
 
+    /**
+     * Job အသစ်ကို Save လုပ်ခြင်း (ADMIN/EMPLOYER ဝင်ခွင့်ရှိရမည်)
+     * URL: /saveJob
+     */
+    @PostMapping("/saveJob")
+    public String saveJob(@ModelAttribute("jobPosting") JobPosting jobPosting, Principal principal, RedirectAttributes redirectAttributes) {
+        // JobPosting Entity မှာ employerUser Field အသစ်ရှိနေပြီ
+        User employer = userService.findByUsername(principal.getName())
+                        .orElseThrow(() -> new IllegalStateException("Employer user not found."));
+        
+        jobPosting.setEmployerUser(employer); // Owner ကို သတ်မှတ်ခြင်း
+        
+        jobPostingService.save(jobPosting);
+        redirectAttributes.addFlashAttribute("successMessage", "Job posted successfully!");
+        return "redirect:/jobs";
+    }
+
+    /**
+     * Job ကို ပြင်ဆင်ရန် Form ကို ပြသခြင်း (ADMIN/EMPLOYER ဝင်ခွင့်ရှိရမည်)
+     * URL: /editJob/{id}
+     */
+    @GetMapping("/editJob/{id}")
+    public String showEditJobForm(@PathVariable Long id, Model model) {
+        JobPosting jobPosting = jobPostingService.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException("Invalid job ID:" + id));
+        model.addAttribute("jobPosting", jobPosting);
+        return "job-form";
+    }
+    
+    /**
+     * Job ကို ပြင်ဆင်ပြီး Update လုပ်ခြင်း (ADMIN/EMPLOYER ဝင်ခွင့်ရှိရမည်)
+     * URL: /updateJob/{id}
+     */
     @PostMapping("/updateJob/{id}")
-    public String updateJob(@PathVariable("id") Long id, @ModelAttribute("jobPosting") JobPosting jobPosting) {
+    public String updateJob(@PathVariable Long id, @ModelAttribute("jobPosting") JobPosting jobPosting, RedirectAttributes redirectAttributes) {
+        // ID ကို Set ပေးရန်
         jobPosting.setId(id);
-        jobPostingService.saveJobPosting(jobPosting);
+        jobPostingService.save(jobPosting); // Save method ကို update အတွက်လည်း သုံးနိုင်
+        redirectAttributes.addFlashAttribute("successMessage", "Job updated successfully!");
         return "redirect:/job/" + id;
     }
 
-    @PostMapping("/job/apply/{jobId}")
-    public String applyForJob(@PathVariable("jobId") Long jobId,
-                              @RequestParam("applicantName") String applicantName,
-                              @RequestParam("applicantEmail") String applicantEmail,
-                              @RequestParam("applicantPhone") String applicantPhone,
-                              @RequestParam(value = "cvFile", required = false) MultipartFile cvFile,
-                              Authentication authentication) {
-        
-        try {
-            String username = authentication.getName();
-            User user = userService.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            
-            JobPosting job = jobPostingService.findById(jobId);
-            
-            String cvFilePath = null;
-            if (job.getIsCvRequired() != null && job.getIsCvRequired()) {
-                if (cvFile == null || cvFile.isEmpty()) {
-                    return "redirect:/job/" + jobId + "?error=cvRequired";
-                }
-                
-                String originalFileName = cvFile.getOriginalFilename();
-                String fileExtension = "";
-                if (originalFileName != null && originalFileName.lastIndexOf(".") != -1) {
-                    fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
-                }
-                String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
-                
-                Path path = Paths.get(UPLOADED_FOLDER + uniqueFileName);
-                
-                Files.createDirectories(path.getParent());
-                Files.write(path, cvFile.getBytes());
-                
-                cvFilePath = path.toString();
-            }
-            
-            jobApplicationService.applyForJob(job, user, applicantName, applicantEmail, applicantPhone, cvFilePath);
-
-            return "redirect:/job/" + jobId + "?applied";
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "redirect:/job/" + jobId + "?error";
-        }
+    /**
+     * Job ကို ဖျက်ခြင်း (ADMIN/EMPLOYER ဝင်ခွင့်ရှိရမည်)
+     * URL: /deleteJob/{id}
+     */
+    @GetMapping("/deleteJob/{id}")
+    public String deleteJob(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        jobPostingService.deleteById(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Job deleted successfully!");
+        return "redirect:/jobs";
     }
 }

@@ -1,5 +1,3 @@
-// src/main/java/jme/jobpotunity/kumejobpotunity/entity/JobApplication.java
-
 package jme.jobpotunity.kumejobpotunity.entity;
 
 import jakarta.persistence.*;
@@ -13,28 +11,37 @@ public class JobApplication {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // JobPosting (Job Owner Company က တင်ထားတဲ့ အလုပ်)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id", nullable = false)
     private JobPosting job;
 
+    // User (လျှောက်ထားသူရဲ့ User Account)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // Data-Centric Change: Applicant's Structured Profile (Profile Data ကို တိုက်ရိုက်ချိတ်ဆက်)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "applicant_profile_id", nullable = false)
+    private ApplicantProfile applicantProfile; 
+
     private LocalDate applicationDate;
 
-    // Add new fields for the application form
-    private String applicantName;
-    private String applicantEmail;
-    private String applicantPhone;
-    private String cvFilePath; // CV file path on the server
+    // Application ၏ အခြေအနေ (Employer များ စီမံခန့်ခွဲရန်အတွက်)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ApplicationStatus status; 
 
-    // Constructors
+    // --- 1. Constructors ---
+
     public JobApplication() {
         this.applicationDate = LocalDate.now();
+        this.status = ApplicationStatus.APPLIED; // Default status
     }
 
-    // Getters and Setters for all fields
+    // --- 2. Getters and Setters ---
+
     public Long getId() {
         return id;
     }
@@ -59,6 +66,14 @@ public class JobApplication {
         this.user = user;
     }
 
+    public ApplicantProfile getApplicantProfile() {
+        return applicantProfile;
+    }
+
+    public void setApplicantProfile(ApplicantProfile applicantProfile) {
+        this.applicantProfile = applicantProfile;
+    }
+
     public LocalDate getApplicationDate() {
         return applicationDate;
     }
@@ -67,36 +82,11 @@ public class JobApplication {
         this.applicationDate = applicationDate;
     }
 
-    // Getters and Setters for the new fields
-    public String getApplicantName() {
-        return applicantName;
+    public ApplicationStatus getStatus() {
+        return status;
     }
 
-    public void setApplicantName(String applicantName) {
-        this.applicantName = applicantName;
-    }
-
-    public String getApplicantEmail() {
-        return applicantEmail;
-    }
-
-    public void setApplicantEmail(String applicantEmail) {
-        this.applicantEmail = applicantEmail;
-    }
-
-    public String getApplicantPhone() {
-        return applicantPhone;
-    }
-
-    public void setApplicantPhone(String applicantPhone) {
-        this.applicantPhone = applicantPhone;
-    }
-
-    public String getCvFilePath() {
-        return cvFilePath;
-    }
-
-    public void setCvFilePath(String cvFilePath) {
-        this.cvFilePath = cvFilePath;
+    public void setStatus(ApplicationStatus status) {
+        this.status = status;
     }
 }
