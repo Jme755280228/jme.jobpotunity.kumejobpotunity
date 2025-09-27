@@ -1,4 +1,4 @@
-package com.yourprojectname.model;
+package jme.jobpotunity.kumejobpotunity.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
