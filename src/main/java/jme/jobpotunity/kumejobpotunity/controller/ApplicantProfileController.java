@@ -8,11 +8,13 @@ import jme.jobpotunity.kumejobpotunity.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult; // Validation အတွက် လိုအပ်
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.validation.Valid; // Validation အတွက် လိုအပ်
 import java.security.Principal;
 import java.util.Optional;
 
@@ -60,19 +62,32 @@ public class ApplicantProfileController {
 
     /**
      * Profile Form ကနေ Data ယူပြီး Save/Update လုပ်ခြင်း (/profile/save)
+     * Data-Centric ATS ၏ အဓိက Input Point ဖြစ်သည်။
      */
     @PostMapping("/save")
-    public String saveProfile(@ModelAttribute("profile") ApplicantProfile profile, 
+    public String saveProfile(@ModelAttribute("profile") @Valid ApplicantProfile profile, // << Validation စစ်ဆေးရန်
+                              BindingResult result, // << Error များ လက်ခံရန်
                               Principal principal) {
         
+        // 1. Validation Error ရှိမရှိ စစ်ဆေးခြင်း
+        if (result.hasErrors()) {
+            // Validation Failed: Error Message ဖြင့် Form ကို ပြန်ပြမည်
+            // Nested List တွေမှာ Error ရှိရင် ဒီနည်းနဲ့ ပြန်ပြရပါတယ်။
+            return "applicant-profile-form"; 
+        }
+
+        // 2. Security & User ကို ရယူခြင်း
         User user = userService.findByUsername(principal.getName())
                         .orElseThrow(() -> new IllegalStateException("Login user not found."));
 
-        // User Entity နဲ့ ချိတ်ဆက်ပြီး Relationship Consistency ကို ထိန်းသိမ်းခြင်း
+        // 3. User Entity နဲ့ ချိတ်ဆက်ပြီး Relationship Consistency ကို ထိန်းသိမ်းခြင်း
         profile.setUser(user);
         user.setApplicantProfile(profile); 
         
+        // 4. Data သိမ်းဆည်းခြင်း
         applicantProfileService.saveOrUpdateProfile(profile);
+        
+        // Success Message ထည့်သွင်းရန် လိုအပ်နိုင်သည်
         
         return "redirect:/"; // Homepage သို့မဟုတ် Job Listing သို့ ပြန်ပို့
     }
