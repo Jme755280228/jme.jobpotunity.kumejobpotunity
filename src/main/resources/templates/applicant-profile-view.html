@@ -1,68 +1,107 @@
 <!DOCTYPE html>
-<html lang="en" 
+<html lang="my"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title th:text="'Profile of ' + ${profile.fullName}">Applicant Profile View</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title th:text="'Profile of ' + ${profile.fullName}">လျှောက်ထားသူ Profile</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"> 
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
     <style>
-        .profile-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
-        .detail-item { margin-bottom: 10px; }
-        .experience-entry, .education-entry { border-left: 3px solid #007bff; padding-left: 15px; margin-top: 10px; }
+        .profile-section { margin-bottom: 25px; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px; background-color: #fff; }
+        .detail-item { margin-bottom: 8px; }
+        .experience-entry, .education-entry { 
+            border-left: 4px solid #007bff; 
+            padding-left: 15px; 
+            margin-top: 15px;
+            background-color: #f8f9fa; /* Light background for entries */
+            padding-top: 10px;
+            padding-bottom: 5px;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <p>
-        <a th:href="@{'/employer/jobs/' + ${application.job.id} + '/applicants'}" class="btn btn-secondary btn-sm">← Back to Applicants List</a>
-    </p>
+<div th:replace="fragments/header :: main-header"></div>
+
+<div class="container my-5">
+    
+    <div th:if="${application != null}" class="mb-4">
+        <a th:href="@{'/employer/jobs/' + ${application.job.id} + '/applicants'}" class="btn btn-secondary btn-sm">
+            ← လျှောက်ထားသူစာရင်းသို့ ပြန်သွားရန်
+        </a>
+    </div>
+
+    <div sec:authorize="isAuthenticated()">
+        <div th:if="${#authentication.name == profile.user.username}" class="mb-4">
+            <a th:href="@{/profile/edit}" class="btn btn-warning"><i class="fa fa-edit"></i> Profile ပြင်ဆင်ရန်</a>
+        </div>
+    </div>
 
     <h1 th:text="${profile.fullName}">Applicant Name</h1>
-    <h2 th:text="${profile.currentTitle}">Current Title</h2>
+    <h2 class="lead mb-4" th:text="${profile.currentTitle}">Current Title</h2>
     <hr>
 
     <div class="profile-section">
-        <h3>1. Personal Details</h3>
-        <p th:text="${profile.professionalSummary}">[Professional Summary]</p>
-        
-        <div class="detail-item"><strong>Email:</strong> <span th:text="${profile.email}"></span></div>
-        <div class="detail-item"><strong>Phone:</strong> <span th:text="${profile.phone}"></span></div>
-        <div class="detail-item"><strong>Total Exp (Yrs):</strong> <span th:text="${profile.totalExperienceYears}"></span></div>
-        <div class="detail-item"><strong>LinkedIn:</strong> <a th:href="${profile.linkedInUrl}" th:text="${profile.linkedInUrl}"></a></div>
-        <div class="detail-item"><strong>Key Skills:</strong> <span th:text="${profile.skills}"></span></div>
-    </div>
+        <h3>ကိုယ်ရေးအကျဉ်းချုပ်</h3>
+        <p class="font-italic" th:text="${profile.professionalSummary}">[ကိုယ်ရေးအကျဉ်းချုပ် ဖော်ပြထားခြင်း မရှိပါ]</p>
 
-    <div class="profile-section">
-        <h3>2. Work Experience</h3>
-        <div th:if="${profile.jobExperiences.isEmpty()}">No work experience provided.</div>
-        
-        <div th:each="exp : ${profile.jobExperiences}" class="experience-entry">
-            <h4 th:text="${exp.jobTitle}">Job Title</h4>
-            <div class="detail-item"><strong>Company:</strong> <span th:text="${exp.companyName}"></span></div>
-            <div class="detail-item"><strong>Duration:</strong> <span th:text="${exp.duration}"></span></div>
-            <p><strong>Responsibilities:</strong> <span th:text="${exp.description}"></span></p>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="detail-item"><strong>Email:</strong> <span th:text="${profile.email}">N/A</span></div>
+                <div class="detail-item"><strong>Phone:</strong> <span th:text="${profile.phone}">N/A</span></div>
+                <div class="detail-item"><strong>Total Exp (Yrs):</strong> <span th:text="${profile.totalExperienceYears}">0</span></div>
+            </div>
+            <div class="col-md-6">
+                <div class="detail-item"><strong>LinkedIn:</strong> <a th:if="${profile.linkedInUrl}" th:href="${profile.linkedInUrl}" target="_blank" th:text="${profile.linkedInUrl}"></a></div>
+                <div class="detail-item"><strong>Portfolio:</strong> <a th:if="${profile.portfolioUrl}" th:href="${profile.portfolioUrl}" target="_blank" th:text="${profile.portfolioUrl}"></a></div>
+                <div class="detail-item"><strong>Key Skills:</strong> <span th:text="${profile.skills}">N/A</span></div>
+            </div>
         </div>
     </div>
 
     <div class="profile-section">
-        <h3>3. Education</h3>
-        <div th:if="${profile.educationList.isEmpty()}">No education history provided.</div>
-        
-        <div th:each="edu : ${profile.educationList}" class="education-entry">
-            <h4 th:text="${edu.degree}">Degree</h4>
-            <div class="detail-item"><strong>Institution:</strong> <span th:text="${edu.institution}"></span></div>
-            <div class="detail-item"><strong>Completed:</strong> <span th:text="${edu.completionYear}"></span></div>
+        <h3>အလုပ်အတွေ့အကြုံများ</h3>
+        <div th:if="${profile.experiences.isEmpty()}" class="text-muted">အလုပ်အတွေ့အကြုံ ဖော်ပြထားခြင်း မရှိပါ။</div>
+
+        <div th:each="exp : ${profile.experiences}" class="experience-entry">
+            <h4 class="mb-1" th:text="${exp.jobTitle}">Job Title</h4>
+            <div class="detail-item"><strong>ကုမ္ပဏီ:</strong> <span th:text="${exp.companyName}"></span></div>
+            
+            <div class="detail-item">
+                <strong>ကာလ:</strong> 
+                <span th:text="${exp.startDate}">Start Date</span> 
+                - 
+                <span th:text="${exp.endDate != null ? exp.endDate : 'လက်ရှိအထိ'}">End Date</span>
+            </div>
+            <p class="mt-2 mb-0"><strong>တာဝန်များ/ဖော်ပြချက်:</strong> <span th:text="${exp.description}"></span></p>
         </div>
     </div>
-    
+
     <div class="profile-section">
-        <h3>Application Status</h3>
-        <p><strong>Status:</strong> <span th:text="${application.status}">APPLIED</span></p>
+        <h3>ပညာအရည်အချင်းများ</h3>
+        <div th:if="${profile.education.isEmpty()}" class="text-muted">ပညာအရည်အချင်း ဖော်ပြထားခြင်း မရှိပါ။</div>
+
+        <div th:each="edu : ${profile.education}" class="education-entry">
+            <h4 class="mb-1" th:text="${edu.degree}">Degree</h4>
+            <div class="detail-item"><strong>ကျောင်း/တက္ကသိုလ်:</strong> <span th:text="${edu.schoolName}"></span></div>
+            <div class="detail-item"><strong>ပြီးဆုံးနှစ်:</strong> <span th:text="${edu.graduationYear}"></span></div>
+            <div th:if="${edu.major}" class="detail-item"><strong>ဘာသာရပ်:</strong> <span th:text="${edu.major}"></span></div>
+            <div th:if="${edu.gpa}" class="detail-item"><strong>GPA:</strong> <span th:text="${edu.gpa}"></span></div>
         </div>
+    </div>
+
+    <div th:if="${application != null}" class="profile-section bg-light">
+        <h3>လျှောက်ထားမှု အခြေအနေ</h3>
+        <p><strong>အခြေအနေ:</strong> <span class="badge badge-info p-2" th:text="${application.status}">APPLIED</span></p>
+    </div>
 
 </div>
 
+<div th:replace="fragments/footer :: main-footer"></div> 
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+
 </body>
 </html>
+

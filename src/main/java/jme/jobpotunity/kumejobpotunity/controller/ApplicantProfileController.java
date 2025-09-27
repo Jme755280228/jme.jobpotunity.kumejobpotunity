@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.validation.Valid; // Validation အတွက် လိုအပ်
+//import javax.validation.Valid; // Validation အတွက် လိုအပ်
+import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.Optional;
 

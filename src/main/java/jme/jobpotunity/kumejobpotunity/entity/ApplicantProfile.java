@@ -1,4 +1,4 @@
-package jme.jobpotunity.kumejobpotunity.entity
+package jme.jobpotunity.kumejobpotunity.entity;
 
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -113,4 +113,17 @@ public class ApplicantProfile {
         this.education.remove(edu);
         edu.setApplicantProfile(null);
     }
+
+    /**
+     * Data-Centric: Check if the profile has essential data filled out.
+     * This replaces the old logic of checking for CV file existence.
+     */
+    public boolean isProfileComplete() {
+        // Essential fields and at least one education or experience entry are required for 'completeness'
+        return this.fullName != null && !this.fullName.trim().isEmpty() &&
+               this.currentTitle != null && !this.currentTitle.trim().isEmpty() &&
+               (this.experiences != null && !this.experiences.isEmpty() ||
+                this.education != null && !this.education.isEmpty());
+    }
+
 }

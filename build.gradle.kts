@@ -31,6 +31,10 @@ dependencies {
 	
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	   // NEW: For validation annotations (@Valid, @NotNull, etc.) - This fixes the 'package javax.validation does not exist' error
+    implementation ("org.springframework.boot:spring-boot-starter-validation")
+
 }
 
 tasks.withType<Test> {

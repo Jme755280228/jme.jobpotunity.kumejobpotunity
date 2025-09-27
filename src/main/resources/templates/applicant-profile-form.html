@@ -3,13 +3,7 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>အလုပ်လျှောက်ထားသူ Profile</title>
-    <link rel="stylesheet" th:href="@{/bootstrap/bootstrap.min.css}">
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+    </head>
 <body>
 
 <div th:replace="fragments/header :: main-header"></div>
@@ -23,6 +17,66 @@
 
         <input type="hidden" th:field="*{id}" />
         <input type="hidden" th:field="*{user}" /> 
+        
+        <section class="card mb-4 p-4 shadow-sm">
+            <h4 class="card-title mb-3">ကိုယ်ရေးအချက်အလက်များ</h4>
+            
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="fullName">အမည်အပြည့်အစုံ *</label>
+                    <input type="text" th:field="*{fullName}" id="fullName" class="form-control" required>
+                    <span th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-danger"></span>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="currentTitle">လက်ရှိရာထူး *</label>
+                    <input type="text" th:field="*{currentTitle}" id="currentTitle" class="form-control" required>
+                    <span th:if="${#fields.hasErrors('currentTitle')}" th:errors="*{currentTitle}" class="text-danger"></span>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="email">Email</label>
+                    <input type="email" th:field="*{email}" id="email" class="form-control">
+                </div>
+                 <div class="form-group col-md-4">
+                    <label for="phone">Phone</label>
+                    <input type="tel" th:field="*{phone}" id="phone" class="form-control">
+                </div>
+                 <div class="form-group col-md-4">
+                    <label for="totalExperienceYears">စုစုပေါင်း အတွေ့အကြုံ (နှစ်)</label>
+                    <input type="number" th:field="*{totalExperienceYears}" id="totalExperienceYears" class="form-control" min="0">
+                </div>
+            </div>
+
+             <div class="form-group">
+                <label for="professionalSummary">ကိုယ်ရေးအကျဉ်းချုပ် (Summary)</label>
+                <textarea th:field="*{professionalSummary}" id="professionalSummary" class="form-control" rows="4"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="skills">ကျွမ်းကျင်မှုများ (Skills) (Comma ဖြင့် ခွဲခြားရန်)</label>
+                <input type="text" th:field="*{skills}" id="skills" class="form-control">
+            </div>
+        </section>
+        
+        <section class="card mb-4 p-4 shadow-sm">
+            <h4 class="card-title">ပညာအရည်အချင်းများ</h4>
+            <div id="education-container">
+                </div>
+            <button type="button" class="btn btn-outline-success mt-3" onclick="addEducation()">
+                <i class="fa fa-plus"></i> Education ထပ်ထည့်ရန်
+            </button>
+        </section>
+
+        <section class="card mb-4 p-4 shadow-sm">
+            <h4 class="card-title">အလုပ်အတွေ့အကြုံများ</h4>
+            <div id="experience-container">
+                </div>
+            <button type="button" class="btn btn-outline-success mt-3" onclick="addExperience()">
+                <i class="fa fa-plus"></i> Experience ထပ်ထည့်ရန်
+            </button>
+        </section>
         
         <button type="submit" class="btn btn-primary btn-lg mt-5">Profile သိမ်းဆည်းရန်</button>
     </form>

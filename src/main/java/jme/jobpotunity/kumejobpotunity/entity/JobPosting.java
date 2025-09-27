@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Lob; // Import လိုအပ်နိုင်သည်
+import java.time.LocalDate; // NEW: postedDate အတွက် Import
 
 @Entity
 public class JobPosting {
@@ -16,10 +18,19 @@ public class JobPosting {
     private Long id;
 
     private String title;
-    private String description;
+    
+    // Description ကို @Lob အဖြစ်ထားခြင်းက ပိုသင့်လျော်သည်
+    @Lob 
+    private String description; 
+    
     private String location;
     private String salary;
     private String jobType;
+
+    // --- Fields Added to Fix Compile Errors ---
+    private LocalDate postedDate; // NEW: JobPostingService မှ လိုအပ်သော Field
+    private Boolean isActive = true; // NEW: JobPostingService မှ လိုအပ်သော Field (Default value: true)
+    // ----------------------------------------
 
     @Column(name = "is_cv_required")
     private Boolean isCvRequired;
@@ -27,7 +38,7 @@ public class JobPosting {
     // Data Ownership Change: Job Posting တင်သူ (Employer Role ရှိသော User)
     @ManyToOne
     @JoinColumn(name = "employer_user_id", nullable = false)
-    private User employerUser; // <<<<< Field အသစ်
+    private User employerUser; 
 
     @ManyToOne
     @JoinColumn(name = "company_id")
@@ -103,7 +114,6 @@ public class JobPosting {
         this.isCvRequired = isCvRequired;
     }
 
-    // New Getter and Setter for employerUser
     public User getEmployerUser() {
         return employerUser;
     }
@@ -111,4 +121,22 @@ public class JobPosting {
     public void setEmployerUser(User employerUser) {
         this.employerUser = employerUser;
     }
+    
+    // --- Getters and Setters for Missing Fields (FIX) ---
+    public LocalDate getPostedDate() {
+        return postedDate;
+    }
+
+    public void setPostedDate(LocalDate postedDate) {
+        this.postedDate = postedDate;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
 }
+
