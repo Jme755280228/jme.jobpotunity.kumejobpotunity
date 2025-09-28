@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="my" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>အလုပ်အကိုင်များ ရှာဖွေမှုစာရင်း</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: main-header}"></div>
+    
+    <div class="container my-5">
+        <h1>အလုပ်အကိုင်များ စာရင်း (Home Page)</h1>
+        <p>JobController မှ Data များ ပေးပို့နေပါသည်။ Template Error ရှင်းလင်းပြီး။</p>
+        
+        <div th:if="${jobs != null}" class="alert alert-info">
+            ယခုတွင် Job အရေအတွက် <span th:text="${jobs.size()}">0</span> ခု ရှိပါသည်။
+        </div>
+        
+    </div>
+    
+    <div th:replace="~{fragments/footer :: main-footer}"></div>
+   
+    <script th:src="@{/js/jquery-3.7.1.min.js}"></script> 
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script> 
+
+</body>
+</html>
+
