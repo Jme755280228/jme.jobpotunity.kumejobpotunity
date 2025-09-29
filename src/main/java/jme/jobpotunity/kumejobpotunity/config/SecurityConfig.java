@@ -1,3 +1,5 @@
+// src/main/java/.../config/SecurityConfig.java
+
 package jme.jobpotunity.kumejobpotunity.config;
 
 import org.springframework.context.annotation.Bean;
@@ -11,30 +13,43 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+// 💡 FIX: AntPathRequestMatcher အစား PathRequestMatcher ကို အသုံးပြုပါမည်။
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher; 
+import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector; // MvcRequestMatcher အတွက် လိုအပ်သည်။
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // HandlerMappingIntrospector ကို Inject လုပ်ရပါမယ်။ (MvcRequestMatcher အတွက်)
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
+        
+        // MvcRequestMatcher ကို အသုံးပြုရန်
+        MvcRequestMatcher.Builder mvcMatcherBuilder = new MvcRequestMatcher.Builder(introspector);
+
         http
-            // CSRF protection ကို h2-console အတွက် ignore လုပ်ထားတယ် (ရှိရင်)
-            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+            // 1. CSRF protection ကို H2 console အတွက် ignore လုပ်ထားတယ်
+            .csrf(csrf -> csrf
+                // 💡 FIX: AntPathRequestMatcher (Deprecated) အစား mvcMatcherBuilder ကို သုံးပါမည်
+                .ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")) 
+                // Spring Boot 3.2+ တွင် PathRequestMatcher ကို သုံးခွင့်ပြုသည်
+            )
             .authorizeHttpRequests(authorize -> authorize
-                // Public ဝင်ခွင့်ရှိတဲ့ pages တွေ
-                .requestMatchers("/", "/register", "/css/**","/js/**", "/job/{id}", "/uploads/**").permitAll()
-                
-                // Employer Role အတွက် လမ်းကြောင်းအသစ်
-                // Employer Portal နှင့် Job Management ဝင်ခွင့်
-                .requestMatchers("/employer/**").hasRole("EMPLOYER") // <<<<<<< အဓိက ထပ်ပေါင်းချက်
-                
-                // Admin role ရှိမှ ဝင်ခွင့်ရှိတဲ့ pages တွေ
-                .requestMatchers("/newJob", "/saveJob", "/editJob/{id}", "/updateJob/{id}", "/deleteJob/{id}", "/admin/**").hasRole("ADMIN")
-                
-                // User role ရှိမှ ဝင်ခွင့်ရှိတဲ့ pages တွေ
-                .requestMatchers("/job/apply/{id}").hasRole("USER")
-                
+                // 💡 FIX: AntPathRequestMatcher (Deprecated) အစား mvcMatcherBuilder ကို သုံးပါမည်
+                .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll() // H2 Console ကို ဝင်ခွင့်ပေးရန်
+                .requestMatchers(mvcMatcherBuilder.pattern("/"), mvcMatcherBuilder.pattern("/register"), 
+                                 mvcMatcherBuilder.pattern("/css/**"), mvcMatcherBuilder.pattern("/js/**"), 
+                                 mvcMatcherBuilder.pattern("/job/{id}"), mvcMatcherBuilder.pattern("/uploads/**")).permitAll()
+
+                // Role based access
+                .requestMatchers(mvcMatcherBuilder.pattern("/employer/**")).hasRole("EMPLOYER")
+                .requestMatchers(mvcMatcherBuilder.pattern("/newJob"), mvcMatcherBuilder.pattern("/saveJob"), 
+                                 mvcMatcherBuilder.pattern("/editJob/{id}"), mvcMatcherBuilder.pattern("/updateJob/{id}"), 
+                                 mvcMatcherBuilder.pattern("/deleteJob/{id}"), mvcMatcherBuilder.pattern("/admin/**")).hasRole("ADMIN")
+                .requestMatchers(mvcMatcherBuilder.pattern("/job/apply/{id}")).hasRole("APPLICANT")
+
                 // ကျန်တဲ့ requests အားလုံးကို authenticate လုပ်ဖို့ လိုအပ်တယ်
                 .anyRequest().authenticated()
             )
@@ -47,11 +62,16 @@ public class SecurityConfig {
                 .permitAll()
             );
 
-        // H2 Console အတွက် Frame Options ကို Disable လုပ်ခြင်း (ရှိရင်)
-        http.headers(headers -> headers.frameOptions().disable()); 
-
+        // H2 Console အတွက်
+        http.headers(headers -> headers
+             .frameOptions(frameOptions -> frameOptions.sameOrigin()) 
+        );
+        
         return http.build();
     }
+    
+    // AntPathRequestMatcher က deprecate ဖြစ်တဲ့အတွက် MvcRequestMatcher သုံးရင် HandlerMappingIntrospector bean လိုအပ်ပါသည်။
+    // AntPathRequestMatcher.antMatcher("/h2-console/**") ကိုတော့ ၎င်းဟာ Static Resource ဖြစ်တဲ့အတွက် အသုံးပြုခွင့်ပေးထားပါတယ်။
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -63,10 +83,6 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    /**
-     * Custom Authentication Success Handler:
-     * Login အောင်မြင်ပြီးနောက် Role ပေါ်မူတည်ပြီး သက်ဆိုင်ရာ Dashboard သို့ redirect လုပ်ရန်။
-     */
     @Bean
     public AuthenticationSuccessHandler customAuthenticationSuccessHandler() {
         SimpleUrlAuthenticationSuccessHandler handler = new SimpleUrlAuthenticationSuccessHandler();
@@ -77,16 +93,16 @@ public class SecurityConfig {
         handler.setRedirectStrategy((request, response, url) -> {
             if (request.isUserInRole("ROLE_ADMIN")) {
                 response.sendRedirect("/admin/jobs");
-            } 
-            // Employer အတွက် Check လုပ်ခြင်း
+            }
             else if (request.isUserInRole("ROLE_EMPLOYER")) {
-                response.sendRedirect("/employer/jobs"); // Employer Dashboard / Job စာရင်း
+                response.sendRedirect("/employer/jobs"); 
             }
             else {
                 response.sendRedirect("/");
             }
         });
-        
+
         return handler;
     }
 }
+

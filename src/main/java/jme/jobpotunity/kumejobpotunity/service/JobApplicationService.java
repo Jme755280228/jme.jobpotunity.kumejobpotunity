@@ -1,7 +1,9 @@
+// src/main/java/.../service/JobApplicationService.java
+
 package jme.jobpotunity.kumejobpotunity.service;
 
 import jme.jobpotunity.kumejobpotunity.entity.ApplicantProfile;
-import jme.jobpotunity.kumejobpotunity.entity.ApplicationStatus; 
+import jme.jobpotunity.kumejobpotunity.entity.ApplicationStatus;
 import jme.jobpotunity.kumejobpotunity.entity.JobApplication;
 import jme.jobpotunity.kumejobpotunity.entity.JobPosting;
 import jme.jobpotunity.kumejobpotunity.entity.User;
@@ -11,63 +13,53 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional; // findById အတွက် Optional ကို Import လုပ်ရန် လိုအပ်သည်
+import java.util.Optional;
 
 @Service
 public class JobApplicationService {
 
     private final JobApplicationRepository jobApplicationRepository;
 
-    // ApplicantProfileService ကို Inject လုပ်ခြင်း (နောက်ပိုင်း Profile ရှိမရှိ စစ်ရန် လိုအပ်နိုင်)
-    // private final ApplicantProfileService applicantProfileService;
-
     @Autowired
     public JobApplicationService(JobApplicationRepository jobApplicationRepository) {
         this.jobApplicationRepository = jobApplicationRepository;
-        // this.applicantProfileService = applicantProfileService; // လိုအပ်ရင် Constructor မှာ ထည့်ပါ
     }
 
     /**
-     * အလုပ်လျှောက်လွှာ တင်ခြင်း (Data-Centric Version)
-     * CV File Path များအစား ApplicantProfile ကို အသုံးပြုပါမည်။
+     * အလုပ်လျှောက်လွှာ တင်ခြင်း
      */
     public JobApplication applyForJob(JobPosting job, User user, ApplicantProfile applicantProfile) {
-        // 1. Profile ရှိမရှိ စစ်ဆေးခြင်း (Controller မှာ အရင်လုပ်ရမည်)
         if (applicantProfile == null) {
              throw new IllegalArgumentException("Cannot apply without a complete Applicant Profile.");
         }
+        if (jobApplicationRepository.findByUserAndJob(user, job).isPresent()) {
+             throw new IllegalStateException("You have already applied for this job.");
+        }
 
-        // 2. Job အတွက် Profile ဖြင့် လျှောက်ထားပြီးသားလား စစ်ဆေးနိုင်သည် (Optional)
-        // if (jobApplicationRepository.existsByJobAndApplicantProfile(job, applicantProfile)) {
-        //     throw new IllegalStateException("Already applied for this job.");
-        // }
-
-        // 3. New JobApplication Object ဖန်တီးခြင်း
         JobApplication jobApplication = new JobApplication();
         jobApplication.setJob(job);
         jobApplication.setUser(user);
-        jobApplication.setApplicantProfile(applicantProfile); // Profile ကို ချိတ်ဆက်လိုက်ခြင်း
+        jobApplication.setApplicantProfile(applicantProfile);
         jobApplication.setApplicationDate(LocalDate.now());
-        jobApplication.setStatus(ApplicationStatus.APPLIED); // Status ကို Default အနေဖြင့် သတ်မှတ်ခြင်း
-
-        // OLD FIELDS (applicantName, cvFilePath) များကို ဖယ်ရှားလိုက်ပြီ။
+        jobApplication.setStatus(ApplicationStatus.APPLIED);
 
         return jobApplicationRepository.save(jobApplication);
     }
 
 
-    // Find applications for a specific job (No Change Needed)
     public List<JobApplication> findApplicationsByJob(JobPosting job) {
         return jobApplicationRepository.findByJob(job);
     }
 
-    /**
-     * JobApplication ကို Id နဲ့ ရှာခြင်း (Employer View အတွက် လိုအပ်နိုင်)
-     * FIX: Re-enabling this method which was commented out in the original code.
-     */
     public Optional<JobApplication> findById(Long id) {
        return jobApplicationRepository.findById(id);
     }
 
+    /**
+     * 💡 FIX: JobApplication ကို Applicant Profile Data ပါ Fetch Join ဖြင့် တစ်ခါတည်း ဆွဲယူရန်
+     */
+    public Optional<JobApplication> findByIdWithProfile(Long id) {
+        return jobApplicationRepository.findByIdWithProfile(id);
+    }
 }
 

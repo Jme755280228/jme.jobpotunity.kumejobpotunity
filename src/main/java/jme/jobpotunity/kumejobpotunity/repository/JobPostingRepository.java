@@ -1,3 +1,5 @@
+// src/main/java/.../repository/JobPostingRepository.java (Final Code)
+
 package jme.jobpotunity.kumejobpotunity.repository;
 
 import jme.jobpotunity.kumejobpotunity.entity.JobPosting;
@@ -16,13 +18,20 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     List<JobPosting> findByEmployerUser(User employer); 
     
     /**
-     * Job Controller ၏ Public Listing အတွက် အသုံးပြုနိုင်သော Method
+     * Public Job Listing အတွက် အသုံးပြုနိုင်သော Method
      * Job များကို Active Status ဖြင့်သာ ပြသရန်။
      */
     List<JobPosting> findByIsActiveTrue();
     
     /**
+     * 💡 NEW: Home Page အတွက် Feature လုပ်ရန် Job များကို ရယူခြင်း
+     * Query: TOP 3 Jobs where isActive is True, ordered by the most recent postedDate
+     */
+    List<JobPosting> findTop3ByIsActiveTrueOrderByPostedDateDesc();
+
+    /**
      * Job Search အတွက် အသုံးပြုနိုင်သော Method
      */
     List<JobPosting> findByTitleContainingIgnoreCase(String title);
 }
+

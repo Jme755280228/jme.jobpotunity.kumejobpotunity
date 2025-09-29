@@ -1,3 +1,5 @@
+// src/main/java/.../controller/JobController.java (Final Code)
+
 package jme.jobpotunity.kumejobpotunity.controller;
 
 import jme.jobpotunity.kumejobpotunity.entity.ApplicantProfile;
@@ -20,7 +22,7 @@ import java.security.Principal;
 import java.util.List;
 
 @Controller
-public class JobController { // Public Job Controller
+public class JobController {
 
     private final JobPostingService jobPostingService;
     private final UserService userService;
@@ -28,7 +30,7 @@ public class JobController { // Public Job Controller
     private final JobApplicationService jobApplicationService;
 
     @Autowired
-    public JobController(JobPostingService jobPostingService, UserService userService, 
+    public JobController(JobPostingService jobPostingService, UserService userService,
                          ApplicantProfileService applicantProfileService, JobApplicationService jobApplicationService) {
         this.jobPostingService = jobPostingService;
         this.userService = userService;
@@ -37,14 +39,38 @@ public class JobController { // Public Job Controller
     }
 
     /**
-     * Public Job Listing Page ကို ပြသခြင်း (Home Page သို့မဟုတ် /jobs)
+     * 💡 FIX 1: Home Page ကို ပြသခြင်း (index.html ကို သုံးပြီး Featured Job များကို ပြသသည်)
+     * URL: /
      */
-    @GetMapping({"/", "/jobs"})
+    @GetMapping("/")
+    public String viewHomePage(Model model) {
+        // JobPostingService တွင် findTop3Active() method ကို ထည့်ရန် လိုအပ်သည် (သို့မဟုတ် Repository မှ တိုက်ရိုက်ခေါ်ပါ)
+        
+        // ယာယီအားဖြင့် JobPostingService ကို ပြင်ဆင်ခြင်းမပြုရသေးပါက၊ Repository မှ တိုက်ရိုက်ခေါ်ယူရန် ဥပမာ:
+        // List<JobPosting> featuredJobs = jobPostingRepository.findTop3ByIsActiveTrueOrderByPostedDateDesc();
+        
+        // 💡 JobPostingService တွင် findAllActive() ကိုသာ အသုံးပြုထားသည်ဟု ယူဆပြီး ယာယီရေးသားခြင်း (Service ကို ပြင်ပြီးရင် အစားထိုးပါ)
+        List<JobPosting> allActiveJobs = jobPostingService.findAllActive();
+        
+        // Home Page ၏ index.html template မှ 'jobPostings' နာမည်ဖြင့် Data ကို ခေါ်ယူနေသည်
+        model.addAttribute("jobPostings", allActiveJobs.subList(0, Math.min(allActiveJobs.size(), 3))); 
+        
+        // Job Count Test အတွက်
+        model.addAttribute("jobCount", allActiveJobs.size());
+
+        return "index"; // 💡 index.html ကို ပြန်ပို့သည်
+    }
+
+    /**
+     * Public Job Listing Page ကို ပြသခြင်း (အလုပ်အားလုံးကို ပြသရန်)
+     * URL: /jobs
+     */
+    @GetMapping("/jobs")
     public String showJobListings(Model model) {
         // Active ဖြစ်နေသော Job များကိုသာ ပြသ
-        List<JobPosting> jobs = jobPostingService.findAllActive(); 
+        List<JobPosting> jobs = jobPostingService.findAllActive();
         model.addAttribute("jobs", jobs);
-        return "job-listings"; // Template name
+        return "job-listings"; // job-listings.html template ကို သုံးသည်
     }
 
     /**
@@ -54,20 +80,17 @@ public class JobController { // Public Job Controller
     public String showJobDetails(@PathVariable Long jobId, Model model) {
         JobPosting job = jobPostingService.findById(jobId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid job ID: " + jobId));
-        
+
         model.addAttribute("job", job);
-        return "job-detail"; // Template name
+        return "job-details"; // job-details.html ကို ပြန်ပို့သည် (Note: job-detail မဟုတ်)
     }
 
-    /**
-     * Job အတွက် လျှောက်လွှာတင်ခြင်း (Data-Centric Flow)
-     * URL: /jobs/{jobId}/apply
-     */
+    // ... (ကျန်သည့် applyForJob method သည် မူရင်းအတိုင်း ဆက်ရှိနေပါမည်)
     @PostMapping("/jobs/{jobId}/apply")
-    public String applyForJob(@PathVariable Long jobId, 
-                              Principal principal, 
+    public String applyForJob(@PathVariable Long jobId,
+                              Principal principal,
                               RedirectAttributes redirectAttributes) {
-        
+
         // 1. Job, User, Profile Entity များကို ရယူခြင်း
         JobPosting job = jobPostingService.findById(jobId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid job ID."));
@@ -76,22 +99,21 @@ public class JobController { // Public Job Controller
             .orElseThrow(() -> new IllegalStateException("Applicant user not found."));
 
         ApplicantProfile profile = applicantProfileService.getProfileByUser(user)
-            .orElse(null); // Profile မရှိရင် null ဖြစ်နိုင်သည်
-            
+            .orElse(null);
+
         // 2. Business Rule: Profile အပြည့်အစုံ ရှိမရှိ စစ်ဆေးခြင်း
-        if (profile == null || !profile.isProfileComplete()) { 
-             // Note: ApplicantProfile Entity မှာ isProfileComplete() method (ဥပမာ- ၅၀% ဖြည့်ပြီး) ထည့်သွင်းရန် လိုအပ်သည်
+        if (profile == null || !profile.isProfileComplete()) {
              redirectAttributes.addFlashAttribute("errorMessage", "လျှောက်လွှာမတင်မီ သင်၏ Profile အချက်အလက်များကို အပြည့်အစုံ ဖြည့်စွက်ရန် လိုအပ်ပါသည်။");
              return "redirect:/profile/edit";
         }
-        
+
         try {
             // 3. Job Application Service ကို ခေါ်ပြီး လျှောက်လွှာတင်ခြင်း
             jobApplicationService.applyForJob(job, user, profile);
 
             redirectAttributes.addFlashAttribute("successMessage", "လျှောက်လွှာတင်ခြင်း အောင်မြင်ပါသည်။");
             return "redirect:/jobs/" + jobId;
-            
+
         } catch (IllegalStateException e) {
             // 4. Job ကို ထပ်မံလျှောက်ထားခြင်း ရှိ/မရှိ စစ်ဆေးခြင်း
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -99,3 +121,4 @@ public class JobController { // Public Job Controller
         }
     }
 }
+

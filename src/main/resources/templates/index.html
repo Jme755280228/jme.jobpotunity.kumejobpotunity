@@ -4,30 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>အလုပ်အကိုင်ရှာဖွေရေး</title>
-     
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-   
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-    
     <link rel="stylesheet" th:href="@{/css/styles.css}">
-   
-</head>
+
+    </head>
 
 <body>
-    
-    <div th:replace="~{fragments/header :: main-header}"></div>
+    <div th:replace="~{fragments/header :: main-header}"></div> 
 
     <section class="hero">
         <div class="container">
             <h1>ကျွန်မတို့နဲ့ အလုပ်လုပ်ကြရအောင်</h1>
             <p>သင့်ရဲ့ စွမ်းရည်နဲ့ ကိုက်ညီတဲ့ အလုပ်အကိုင်တွေကို ဒီမှာ ရှာဖွေနိုင်ပါတယ်</p>
-          
-           <form th:action="@{/}" method="get" class="search-form">
+
+           <form th:action="@{/jobs}" method="get" class="search-form">
                 <input type="text" name="query" placeholder="အလုပ်အမည်၊ တည်နေရာဖြင့် ရှာပါ...">
                 <button type="submit"><i class="fas fa-search"></i> ရှာဖွေရန်</button>
             </form>
-          
-            <a sec:authorize="hasRole('ADMIN')" th:href="@{/newJob}" class="add-job-btn">အလုပ်အသစ်တင်မည်</a>
+
+            <a sec:authorize="hasRole('ADMIN') or hasRole('EMPLOYER')" th:href="@{/newJob}" class="add-job-btn">အလုပ်အသစ်တင်မည်</a>
         </div>
     </section>
 
@@ -38,49 +35,42 @@
         <div class="jobs">
             <div class="job-card" th:each="job : ${jobPostings}">
                 <div class="job-header">
-                    <h3 th:text="${job.title}"></h3>
+                    <h3 th:text="${job.title}">Job Title</h3>
                     <div class="company">
                         <img th:src="'https://logo.clearbit.com/' + ${job.company.name.toLowerCase().replaceAll(' ', '')} + '.com'" alt="Company Logo">
-                        <span th:text="${job.company.name}"></span>
+                        <span th:text="${job.company.name}">Company Name</span>
                     </div>
                 </div>
                 <div class="job-details">
-                    <div><i class="fas fa-map-marker-alt"></i> <span th:text="${job.location}"></span></div>
-                    <div><i class="fas fa-money-bill-wave"></i> လစာ: <span th:text="${job.salary}"></span> ကျပ်</div>
-                    <div><i class="fas fa-clock"></i> <span th:text="${job.jobType}"></span></div>
+                    <div class="job-category-type">
+                        <i class="fas fa-tag"></i> 
+                        <span th:text="${job.category}">Category</span> | 
+                        <span th:text="${job.jobType}">Job Type</span>
+                    </div>
+                    
+                    <div><i class="fas fa-map-marker-alt"></i> <span th:text="${job.location}">Location</span></div>
+                    <div><i class="fas fa-money-bill-wave"></i> လစာ: <span th:text="${job.salary}">Salary</span></div>
+                    <div><i class="fas fa-calendar-alt"></i> တင်သည့်နေ့: <span th:text="${job.postedDate}"></span></div>
                 </div>
-                <a th:href="@{/job/{id}(id=${job.id})}" class="apply-btn">အသေးစိတ်ကြည့်ရန်</a>
+                <a th:href="@{/jobs/{id}(id=${job.id})}" class="apply-btn">အသေးစိတ်ကြည့်ရန်</a> 
+            </div>
+            
+            <div th:if="${jobPostings == null or jobPostings.isEmpty()}" class="alert alert-warning">
+                ယခုအချိန်တွင် Feature လုပ်ရန် အလုပ်အကိုင် မရှိသေးပါ။
+            </div>
+            
+            <div class="text-center mt-4">
+                 <a th:href="@{/jobs}" class="btn btn-primary">အလုပ်အားလုံးကြည့်ရန်</a>
             </div>
         </div>
     </section>
-
+    
     <section class="how-it-works">
-        <div class="container">
-            <div class="section-title-container">
-                <h2 class="section-title">အလုပ်လုပ်ပုံအဆင့်ဆင့်</h2>
-            </div>
-            <div class="steps">
-                <div class="step-card">
-                    <i class="fas fa-search"></i>
-                    <h3>ရှာဖွေပါ</h3>
-                    <p>သင့်အတွက် အကောင်းဆုံးအလုပ်ကို ရှာဖွေရန် ကျွန်ုပ်တို့၏ စာရင်းကို ကြည့်ပါ။</p>
-                </div>
-                <div class="step-card">
-                    <i class="fas fa-handshake"></i>
-                    <h3>လျှောက်ထားပါ</h3>
-                    <p>သင်စိတ်ဝင်စားသော အလုပ်အတွက် တစ်ချက်နှိပ်ရုံဖြင့် လျှောက်ထားပါ။</p>
-                </div>
-                <div class="step-card">
-                    <i class="fas fa-user-tie"></i>
-                    <h3>စတင်ပါ</h3>
-                    <p>သင့်ရဲ့ အလုပ်အကိုင်အသစ်ကို ပျော်ရွှင်စွာဖြင့် စတင်လိုက်ပါ။</p>
-                </div>
-            </div>
-        </div>
-    </section>
-<div th:replace="~{fragments/footer :: main-footer}"></div>
-   
-     <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+        </section>
+    
+    <div th:replace="~{fragments/footer :: main-footer}"></div> 
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
     <script src="/js/main.js"></script>
 
 </body>
