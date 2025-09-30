@@ -1,5 +1,3 @@
-// src/main/java/.../config/SecurityConfig.java
-
 package jme.jobpotunity.kumejobpotunity.config;
 
 import org.springframework.context.annotation.Bean;
@@ -13,10 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-// 💡 FIX: AntPathRequestMatcher အစား PathRequestMatcher ကို အသုံးပြုပါမည်။
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher; 
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector; // MvcRequestMatcher အတွက် လိုအပ်သည်။
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 @Configuration
 @EnableWebSecurity
@@ -26,31 +22,51 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
         
-        // MvcRequestMatcher ကို အသုံးပြုရန်
+        // MvcRequestMatcher ကို အသုံးပြုရန် Builder တည်ဆောက်သည်
         MvcRequestMatcher.Builder mvcMatcherBuilder = new MvcRequestMatcher.Builder(introspector);
 
         http
-            // 1. CSRF protection ကို H2 console အတွက် ignore လုပ်ထားတယ်
+            // 1. CSRF protection ကို H2 console အတွက် ignore လုပ်ထားသည်
             .csrf(csrf -> csrf
-                // 💡 FIX: AntPathRequestMatcher (Deprecated) အစား mvcMatcherBuilder ကို သုံးပါမည်
-                .ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")) 
-                // Spring Boot 3.2+ တွင် PathRequestMatcher ကို သုံးခွင့်ပြုသည်
+                // H2 console အတွက် လိုအပ်သည် (SQLite သုံးနေသော်လည်း နောင်လေ့လာရန် ထားရှိသည်)
+                .ignoringRequestMatchers(mvcMatcherBuilder.pattern("/h2-console/**")) 
             )
             .authorizeHttpRequests(authorize -> authorize
-                // 💡 FIX: AntPathRequestMatcher (Deprecated) အစား mvcMatcherBuilder ကို သုံးပါမည်
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll() // H2 Console ကို ဝင်ခွင့်ပေးရန်
-                .requestMatchers(mvcMatcherBuilder.pattern("/"), mvcMatcherBuilder.pattern("/register"), 
-                                 mvcMatcherBuilder.pattern("/css/**"), mvcMatcherBuilder.pattern("/js/**"), 
-                                 mvcMatcherBuilder.pattern("/job/{id}"), mvcMatcherBuilder.pattern("/uploads/**")).permitAll()
+                
+                // 💡 NEW: Static Resources (CSS, JS, Images, Uploads) နှင့် Public Pages အားလုံးကို ဝင်ခွင့်ပေးရန်
+                .requestMatchers(mvcMatcherBuilder.pattern("/h2-console/**")).permitAll() // H2 Console ကို ဝင်ခွင့်ပေးရန်
+                .requestMatchers(mvcMatcherBuilder.pattern("/")).permitAll()
+                .requestMatchers(mvcMatcherBuilder.pattern("/register")).permitAll()
+                .requestMatchers(mvcMatcherBuilder.pattern("/login")).permitAll()
+                
+                // 💡 NEW: အလုပ်စာရင်း နှင့် အလုပ်အသေးစိတ်ကို လူတိုင်းကြည့်ခွင့်ရှိရန်
+                .requestMatchers(mvcMatcherBuilder.pattern("/jobs")).permitAll() 
+                .requestMatchers(mvcMatcherBuilder.pattern("/jobs/{id}")).permitAll() // မူရင်းတွင် /job/{id} ဖြစ်သည်၊ /jobs/{id} သို့ ပြောင်းလိုက်သည်
+                
+                // Static Resource Paths များ
+                .requestMatchers(mvcMatcherBuilder.pattern("/css/**")).permitAll() 
+                .requestMatchers(mvcMatcherBuilder.pattern("/js/**")).permitAll() 
+                .requestMatchers(mvcMatcherBuilder.pattern("/images/**")).permitAll() // 💡 NEW: Header အတွက် Image Access ခွင့်ပြုသည်
+                .requestMatchers(mvcMatcherBuilder.pattern("/uploads/**")).permitAll()
 
                 // Role based access
+                // EMPLOYER ၏ Dashboard နှင့် လုပ်ငန်းများ
                 .requestMatchers(mvcMatcherBuilder.pattern("/employer/**")).hasRole("EMPLOYER")
-                .requestMatchers(mvcMatcherBuilder.pattern("/newJob"), mvcMatcherBuilder.pattern("/saveJob"), 
-                                 mvcMatcherBuilder.pattern("/editJob/{id}"), mvcMatcherBuilder.pattern("/updateJob/{id}"), 
-                                 mvcMatcherBuilder.pattern("/deleteJob/{id}"), mvcMatcherBuilder.pattern("/admin/**")).hasRole("ADMIN")
+                
+                // ADMIN ၏ လုပ်ငန်းများ (Job Management အားလုံးကို Admin ဖြင့် ကာကွယ်ထားသည်)
+                .requestMatchers(
+                    mvcMatcherBuilder.pattern("/newJob"), 
+                    mvcMatcherBuilder.pattern("/saveJob"), 
+                    mvcMatcherBuilder.pattern("/editJob/{id}"), 
+                    mvcMatcherBuilder.pattern("/updateJob/{id}"), 
+                    mvcMatcherBuilder.pattern("/deleteJob/{id}"), 
+                    mvcMatcherBuilder.pattern("/admin/**")
+                ).hasRole("ADMIN")
+                
+                // APPLICANT အတွက်
                 .requestMatchers(mvcMatcherBuilder.pattern("/job/apply/{id}")).hasRole("APPLICANT")
 
-                // ကျန်တဲ့ requests အားလုံးကို authenticate လုပ်ဖို့ လိုအပ်တယ်
+                // ကျန်တဲ့ requests အားလုံးကို authenticate လုပ်ဖို့ လိုအပ်သည်
                 .anyRequest().authenticated()
             )
             .formLogin(formLogin -> formLogin
@@ -62,16 +78,13 @@ public class SecurityConfig {
                 .permitAll()
             );
 
-        // H2 Console အတွက်
+        // H2 Console အတွက် (Frame ဖြင့် ဝင်ရောက်ကြည့်ရှုနိုင်ရန်)
         http.headers(headers -> headers
              .frameOptions(frameOptions -> frameOptions.sameOrigin()) 
         );
         
         return http.build();
     }
-    
-    // AntPathRequestMatcher က deprecate ဖြစ်တဲ့အတွက် MvcRequestMatcher သုံးရင် HandlerMappingIntrospector bean လိုအပ်ပါသည်။
-    // AntPathRequestMatcher.antMatcher("/h2-console/**") ကိုတော့ ၎င်းဟာ Static Resource ဖြစ်တဲ့အတွက် အသုံးပြုခွင့်ပေးထားပါတယ်။
 
     @Bean
     public PasswordEncoder passwordEncoder() {

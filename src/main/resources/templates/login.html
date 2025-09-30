@@ -14,15 +14,34 @@
   
   <div th:replace="~{fragments/header :: main-header}"></div>
   
-    <div class="login-container">
-        <h2>လော့ဂ်အင်ဝင်ရန်</h2>
-        <div th:if="${param.error}" class="error-message">အသုံးပြုသူအမည် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။</div>
-        <form th:action="@{/login}" method="post" class="login-form">
-            <input type="text" name="username" placeholder="အသုံးပြုသူအမည်" required autofocus>
-            <input type="password" name="password" placeholder="စကားဝှက်" required>
-            <button type="submit">လော့ဂ်အင်</button>
-        </form>
+  <div class="login-container">
+    <h2 class="mb-4">လော့ဂ်အင်ဝင်ရန်</h2>
+    
+    <div th:if="${param.error}" class="alert alert-danger">
+        အသုံးပြုသူအမည် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။
     </div>
+    
+    <form th:action="@{/login}" method="post" class="login-form">
+        
+        <div class="mb-3">
+            <input type="text" name="username" class="form-control" placeholder="အသုံးပြုသူအမည်" required autofocus>
+        </div>
+        
+        <div class="mb-3">
+            <input type="password" name="password" class="form-control" placeholder="စကားဝှက်" required>
+        </div>
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-success">လော့ဂ်အင်</button>
+        </div>
+    </form>
+    
+    <div class="text-center mt-3">
+        <span class="text-muted">အကောင့်မရှိသေးဘူးလား? </span>
+        <a th:href="@{/register}" class="fw-bold">အကောင့်သစ်ဖွင့်ရန်</a>
+    </div>
+</div>
+
     <div th:replace="~{fragments/footer :: main-footer}"></div>
 </body>
 </html>
