@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="my" 
+<html lang="my"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
@@ -9,23 +9,153 @@
     <link rel="stylesheet" th:href="@{/bootstrap/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .status-active { color: green; font-weight: bold; }
+        .status-inactive { color: orange; font-weight: bold; }
+        .table-employer th {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+    </style>
 </head>
 <body>
 
 <div th:replace="fragments/header :: main-header"></div>
 
 <div class="container my-5">
-    <h1 class="mb-4">အလုပ်ရှင် Dashboard</h1>
-    <h2 th:text="'တင်ထားသော အလုပ်များ (' + ${jobs.size()} + ')'">Your Posted Jobs</h2>
+    <h1 class="mb-3 text-primary">အလုပ်ရှင် Dashboard</h1>
+    <p class="lead text-muted">သင်တင်ထားသော အလုပ်အကိုင်များကို စီမံခန့်ခွဲပါ။</p>
     
-    <p class="mb-4">
-        <a th:href="@{/newJob}" class="btn btn-success"><i class="fas fa-plus me-2"></i> အလုပ်အသစ်တင်ရန်</a>
-    </p>
-
+    <!-- Success Flash Message (Job Create/Update/Delete ပြီးစီးလျှင်ပေါ်မည်) -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${successMessage}">Success message here.</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-<div th:replace="fragments/footer :: main-footer"></div> 
+    <!-- Job Create Button -->
+    <p class="mb-4">
+        <!-- Link updated to match the EmployerController -->
+        <a th:href="@{/employer/jobs/new}" class="btn btn-success shadow-sm">
+            <i class="fas fa-plus me-2"></i> အလုပ်အသစ်တင်ရန်
+        </a>
+    </p>
 
+    <h2 th:text="'တင်ထားသော အလုပ်များ (' + ${jobs.size()} + ')'" class="mb-4 text-secondary fs-4"></h2>
+    
+    <!-- Job Listings Table -->
+    <div class="job-list-table mt-4 table-responsive">
+        
+        <div th:if="${jobs != null and not jobs.isEmpty()}">
+            <table class="table table-striped table-hover table-bordered table-employer shadow-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>အလုပ်အမည် (Title)</th>
+                        <th>တည်နေရာ</th>
+                        <th>အမျိုးအစား</th>
+                        <th>တင်သည့်ရက်စွဲ</th>
+                        <th>Active</th>
+                        <th>လုပ်ဆောင်ချက်များ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loop through the jobs list -->
+                    <tr th:each="job : ${jobs}">
+                        <td th:text="${job.id}">1</td>
+                        <td>
+                            <!-- Public View Link -->
+                            <a th:href="@{/jobs/{id}(id=${job.id})}" th:text="${job.title}">Job Title</a>
+                        </td>
+                        <td th:text="${job.location}">Yangon</td>
+                        <td th:text="${job.jobType}">Full-Time</td>
+                        <td th:text="${job.postedDate}">2025-09-30</td>
+                        <td>
+                            <span th:if="${job.isActive}" class="status-active">
+                                <i class="fas fa-check-circle"></i> Active
+                            </span>
+                            <span th:unless="${job.isActive}" class="status-inactive">
+                                <i class="fas fa-times-circle"></i> Draft
+                            </span>
+                        </td>
+                        <td>
+                            <!-- Action Buttons Group -->
+                            <div class="btn-group" role="group">
+                                <!-- Edit Link (Uses /employer/jobs/edit/{id}) -->
+                                <a th:href="@{/employer/jobs/edit/{id}(id=${job.id})}" class="btn btn-sm btn-warning" title="ပြင်ဆင်ရန်">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <!-- Applicants Link (Uses /employer/jobs/{id}/applicants) -->
+                                <a th:href="@{/employer/jobs/{id}/applicants(id=${job.id})}" class="btn btn-sm btn-info" title="လျှောက်ထားသူများကြည့်ရန်">
+                                    <i class="fas fa-users"></i>
+                                </a>
+                                <!-- Delete Button (Uses Modal for Confirmation) -->
+                                <button type="button" class="btn btn-sm btn-danger delete-btn" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#deleteConfirmationModal"
+                                    th:data-job-id="${job.id}"
+                                    title="ဖျက်ပစ်ရန်">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- No Jobs Found -->
+        <div th:unless="${jobs != null and not jobs.isEmpty()}" class="alert alert-info text-center py-4">
+             <i class="fas fa-info-circle me-2"></i> သင် တင်ထားသော Job များ စာရင်း မရှိသေးပါ။ 
+             <a th:href="@{/employer/jobs/new}" class="alert-link">အလုပ်အသစ် တင်ရန် ဤနေရာကို နှိပ်ပါ</a>
+        </div>
+    </div>
+    
+    <!-- 💡 Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="deleteModalLabel"><i class="fas fa-exclamation-triangle me-2"></i> အလုပ်ဖျက်ပစ်ခြင်း အတည်ပြုချက်</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>သတိပြုရန်:</strong> ဤ Job ကို ဖျက်လိုက်ပါက ပြန်လည်ဖော်ယူနိုင်မည်မဟုတ်ပါ။</p>
+            <p>ဆက်လက်ဆောင်ရွက်လိုပါသလား။</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">မဖျက်တော့ပါ</button>
+            <a id="confirmDeleteButton" href="#" class="btn btn-danger">အတည်ပြု ဖျက်ပစ်မည်</a>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: main-footer"></div>
+
+<script th:src="@{/js/jquery-3.7.1.min.js}"></script>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+
+<script>
+    // JavaScript for handling the Delete Confirmation Modal
+    document.addEventListener('DOMContentLoaded', function() {
+        var deleteModal = document.getElementById('deleteConfirmationModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                // Button that triggered the modal
+                var button = event.relatedTarget;
+                // Extract info from data-job-id attribute
+                var jobId = button.getAttribute('data-job-id');
+                
+                // Update the modal's delete button link to match the Controller: /employer/jobs/delete/{id}
+                var confirmButton = deleteModal.querySelector('#confirmDeleteButton');
+                confirmButton.href = '/employer/jobs/delete/' + jobId;
+            });
+        }
+    });
+</script>
 </body>
 </html>
+
+

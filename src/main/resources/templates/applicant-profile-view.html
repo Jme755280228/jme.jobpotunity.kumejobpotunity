@@ -6,18 +6,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title th:text="'Profile of ' + ${profile.fullName}">လျှောက်ထားသူ Profile</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"> 
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!-- Font Awesome added for icons -->
     <style>
         .profile-section { margin-bottom: 25px; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px; background-color: #fff; }
         .detail-item { margin-bottom: 8px; }
-        .experience-entry, .education-entry { 
-            border-left: 4px solid #007bff; 
-            padding-left: 15px; 
+        .experience-entry, .education-entry {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
             margin-top: 15px;
             background-color: #f8f9fa; /* Light background for entries */
             padding-top: 10px;
             padding-bottom: 5px;
+        }
+        .response-entry {
+            border-left: 4px solid #ffc107; /* Warning/Yellow border for responses */
+            padding: 10px 15px;
+            margin-top: 15px;
+            background-color: #fffbe6; /* Light yellow background */
+            border-radius: 4px;
+        }
+        .response-entry p {
+            white-space: pre-wrap; /* For multiline answers */
         }
     </style>
 </head>
@@ -26,23 +37,29 @@
 <div th:replace="fragments/header :: main-header"></div>
 
 <div class="container my-5">
-    
+
     <div th:if="${application != null}" class="mb-4">
         <a th:href="@{'/employer/jobs/' + ${application.job.id} + '/applicants'}" class="btn btn-secondary btn-sm">
             ← လျှောက်ထားသူစာရင်းသို့ ပြန်သွားရန်
         </a>
     </div>
 
+    <!-- Applicant ကိုယ်တိုင်ကြည့်လျှင် Edit Button ပြပါမည် -->
     <div sec:authorize="isAuthenticated()">
         <div th:if="${#authentication.name == profile.user.username}" class="mb-4">
             <a th:href="@{/profile/edit}" class="btn btn-warning"><i class="fa fa-edit"></i> Profile ပြင်ဆင်ရန်</a>
         </div>
     </div>
 
+    <!-- Job Title နှင့် Application ID ကို Employer မြင်ရစေရန် ထပ်ပေါင်းထည့်ခြင်း -->
     <h1 th:text="${profile.fullName}">Applicant Name</h1>
-    <h2 class="lead mb-4" th:text="${profile.currentTitle}">Current Title</h2>
+    <h2 class="lead mb-2" th:text="${profile.currentTitle}">Current Title</h2>
+    <p th:if="${application != null}" class="text-info mb-4">
+        Job: <span th:text="${application.job.title}"></span> | Application ID: <span th:text="${application.id}"></span>
+    </p>
     <hr>
 
+    <!-- Existing Standard Profile Section -->
     <div class="profile-section">
         <h3>ကိုယ်ရေးအကျဉ်းချုပ်</h3>
         <p class="font-italic" th:text="${profile.professionalSummary}">[ကိုယ်ရေးအကျဉ်းချုပ် ဖော်ပြထားခြင်း မရှိပါ]</p>
@@ -61,6 +78,7 @@
         </div>
     </div>
 
+    <!-- Existing Experience Section -->
     <div class="profile-section">
         <h3>အလုပ်အတွေ့အကြုံများ</h3>
         <div th:if="${profile.experiences.isEmpty()}" class="text-muted">အလုပ်အတွေ့အကြုံ ဖော်ပြထားခြင်း မရှိပါ။</div>
@@ -68,17 +86,18 @@
         <div th:each="exp : ${profile.experiences}" class="experience-entry">
             <h4 class="mb-1" th:text="${exp.jobTitle}">Job Title</h4>
             <div class="detail-item"><strong>ကုမ္ပဏီ:</strong> <span th:text="${exp.companyName}"></span></div>
-            
+
             <div class="detail-item">
-                <strong>ကာလ:</strong> 
-                <span th:text="${exp.startDate}">Start Date</span> 
-                - 
+                <strong>ကာလ:</strong>
+                <span th:text="${exp.startDate}">Start Date</span>
+                -
                 <span th:text="${exp.endDate != null ? exp.endDate : 'လက်ရှိအထိ'}">End Date</span>
             </div>
             <p class="mt-2 mb-0"><strong>တာဝန်များ/ဖော်ပြချက်:</strong> <span th:text="${exp.description}"></span></p>
         </div>
     </div>
 
+    <!-- Existing Education Section -->
     <div class="profile-section">
         <h3>ပညာအရည်အချင်းများ</h3>
         <div th:if="${profile.education.isEmpty()}" class="text-muted">ပညာအရည်အချင်း ဖော်ပြထားခြင်း မရှိပါ။</div>
@@ -92,16 +111,51 @@
         </div>
     </div>
 
+    <!-- JOB-SPECIFIC CUSTOM RESPONSES SECTION (Existing) -->
+    <div th:if="${application != null and not #lists.isEmpty(customResponses)}" class="profile-section bg-light border-warning">
+        <h3 class="text-warning"><i class="fas fa-clipboard-check mr-2"></i> အလုပ်အတွက် ဖြည့်စွက် အဖြေများ</h3>
+
+        <div th:each="response : ${customResponses}" class="response-entry">
+            <!-- Question Field Name -->
+            <p class="mb-1">
+                <strong class="text-dark" th:text="${response.applicationField.fieldName}">Custom Question Title</strong>
+                <span class="badge badge-secondary float-right" th:text="${response.applicationField.fieldType}"></span>
+            </p>
+            <!-- Applicant's Answer -->
+            <p class="text-muted small mb-0" th:text="${response.answerValue}">
+                 Applicant's detailed answer goes here.
+            </p>
+        </div>
+    </div>
+    <div th:if="${application != null and #lists.isEmpty(customResponses)}" class="profile-section bg-light border-success">
+         <p class="text-success">ဤအလုပ်အတွက် ဖြည့်စွက်မေးခွန်းများ မရှိပါ။</p>
+    </div>
+
+    <!-- 🎯 UPDATED: Application Status & CV Download Section -->
     <div th:if="${application != null}" class="profile-section bg-light">
         <h3>လျှောက်ထားမှု အခြေအနေ</h3>
         <p><strong>အခြေအနေ:</strong> <span class="badge badge-info p-2" th:text="${application.status}">APPLIED</span></p>
+
+        <!-- CV Link based on cvPath -->
+        <div th:if="${application.cvPath != null and application.cvPath.length() > 0}" class="mt-3 pt-3 border-top">
+            <p class="mb-2"><strong>CV File:</strong></p>
+            <!-- Note: The actual download endpoint (e.g., /download/cv/{id}) needs to be implemented in a Controller -->
+            <a th:href="@{'/download/cv/' + ${application.id}}" target="_blank" class="btn btn-success btn-sm">
+                <i class="fas fa-download mr-1"></i> CV File ဒေါင်းလုပ်ဆွဲရန်
+            </a>
+            <span class="ml-3 small text-muted d-none d-md-inline"> (Path: <span th:text="${application.cvPath}"></span>)</span>
+        </div>
+        <div th:unless="${application.cvPath != null and application.cvPath.length() > 0}" class="mt-3">
+             <p class="text-muted small mb-0">လျှောက်ထားသူသည် CV File တင်သွင်းထားခြင်း မရှိပါ။</p>
+        </div>
     </div>
 
 </div>
 
-<div th:replace="fragments/footer :: main-footer"></div> 
+<div th:replace="fragments/footer :: main-footer"></div>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 
 </body>
 </html>
+
 

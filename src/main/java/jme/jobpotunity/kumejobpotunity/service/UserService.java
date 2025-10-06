@@ -30,7 +30,7 @@ public class UserService {
         User newUser = new User();
         newUser.setUsername(username);
         newUser.setPassword(passwordEncoder.encode(password)); // password ကို encrypt လုပ်သည်
-        newUser.setRole("USER"); // default role ကို USER အဖြစ် သတ်မှတ်သည်
+        newUser.getRoles().add("USER"); // Default role ကို add လုပ်
         userRepository.save(newUser);
     }
 

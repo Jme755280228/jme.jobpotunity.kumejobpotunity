@@ -1,37 +1,26 @@
-// src/main/java/.../repository/JobPostingRepository.java (Final Code)
-
 package jme.jobpotunity.kumejobpotunity.repository;
 
 import jme.jobpotunity.kumejobpotunity.entity.JobPosting;
 import jme.jobpotunity.kumejobpotunity.entity.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
-import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
-
-    /**
-     * Employer Dashboard အတွက် လိုအပ်သော Method
-     * Employer တစ်ဦးတည်းက တင်ထားသော Job များစာရင်းကို ရှာဖွေခြင်း။
-     */
-    List<JobPosting> findByEmployerUser(User employer); 
     
-    /**
-     * Public Job Listing အတွက် အသုံးပြုနိုင်သော Method
-     * Job များကို Active Status ဖြင့်သာ ပြသရန်။
-     */
-    List<JobPosting> findByIsActiveTrue();
+    List<JobPosting> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+        String title, 
+        String description
+    );
     
-    /**
-     * 💡 NEW: Home Page အတွက် Feature လုပ်ရန် Job များကို ရယူခြင်း
-     * Query: TOP 3 Jobs where isActive is True, ordered by the most recent postedDate
-     */
-    List<JobPosting> findTop3ByIsActiveTrueOrderByPostedDateDesc();
+    List<JobPosting> findByEmployerUser(User employer);
+    
+    List<JobPosting> findByEmployerUser_Id(Long employerId);
 
-    /**
-     * Job Search အတွက် အသုံးပြုနိုင်သော Method
-     */
-    List<JobPosting> findByTitleContainingIgnoreCase(String title);
+    // 🎯 FIX: Service layer မှ ခေါ်ဆိုသော method နှင့် ကိုက်ညီစေရန် ပြင်ဆင်ခြင်း။
+    // findByIsApprovedTrue() နှင့် findByIsApprovedFalse() အစား ဤ method တစ်ခုတည်းကို အသုံးပြုပါမည်။
+    // Pageable parameter ထည့်သွင်းပြီး Pagination ကိုပါ ထောက်ပံ့ပေးထားပါသည်။
+    Page<JobPosting> findByIsApproved(boolean isApproved, Pageable pageable);
+
 }
-

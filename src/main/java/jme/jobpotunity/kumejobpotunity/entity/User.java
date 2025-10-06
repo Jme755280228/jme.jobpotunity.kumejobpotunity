@@ -1,41 +1,45 @@
 package jme.jobpotunity.kumejobpotunity.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Table;
+import jakarta.persistence.JoinColumn;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
 public class User {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
     private String username;
-
-    @Column(nullable = false)
     private String password;
+    private String email; 
+    
+    // 🎯 FIX 1.1: 'role' ကို Set<String> 'roles' သို့ ပြောင်းလဲခြင်း
+    // User တစ်ယောက်တွင် Role တစ်ခုထက် ပိုရှိနိုင်သောကြောင့် (e.g., ADMIN, EMPLOYER)
+    @ElementCollection(fetch = FetchType.EAGER) // User ကို ခေါ်တိုင်း Role တွေပါလာအောင် EAGER သုံးပါ
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    private Set<String> roles = new HashSet<>(); 
 
-    // Role ကို "ADMIN", "USER", "EMPLOYER" တွေအတွက် လက်ခံနိုင်ရန်
-    @Column(nullable = false)
-    private String role; 
-
-    // Data-Centric Change: User Account တစ်ခုသည် Applicant Profile တစ်ခုနှင့်သာ သက်ဆိုင်သည်
-    // mappedBy = "user" သည် ApplicantProfile Entity မှ ချိတ်ဆက်မှုကို ပြန်ညွှန်းသည်
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private ApplicantProfile applicantProfile; // <<<<< Field အသစ်
+    private ApplicantProfile profile;
 
-    // --- 1. Constructors ---
+    // --- Constructors ---
     public User() {
     }
 
-    public User(String username, String password, String role) {
-        this.username = username;
-        this.password = password;
-        this.role = role;
-    }
-
-    // --- 2. Getters and Setters ---
+    // --- Getters and Setters ---
     public Long getId() {
         return id;
     }
@@ -60,20 +64,28 @@ public class User {
         this.password = password;
     }
 
-    public String getRole() {
-        return role;
+    public String getEmail() {
+        return email;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    // New Getter and Setter for ApplicantProfile
-    public ApplicantProfile getApplicantProfile() {
-        return applicantProfile;
+    // 🎯 FIX 1.2: DataSeeder မှ ခေါ်ဆိုသော setRoles() method ကို ထည့်သွင်းခြင်း
+    public Set<String> getRoles() {
+        return roles;
     }
 
-    public void setApplicantProfile(ApplicantProfile applicantProfile) {
-        this.applicantProfile = applicantProfile;
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
+    }
+
+    public ApplicantProfile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(ApplicantProfile profile) {
+        this.profile = profile;
     }
 }

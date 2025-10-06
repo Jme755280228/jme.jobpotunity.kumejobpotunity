@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="my" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${formTitle}"></title>
+    <!-- Tailwind CSS (Using a minimal setup for modern look) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom styles for better readability and mobile view */
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .field-group {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .field-group-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #f3f4f6;
+            padding-bottom: 0.5rem;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    
+    <!-- Header Fragment Placeholder -->
+    <!-- Assuming fragments/header :: main-header loads the header -->
+    <div th:replace="~{fragments/header :: main-header}"></div>
+
+    <div class="container mx-auto p-4">
+        <div class="form-container">
+            <h2 th:text="${formTitle}" class="text-3xl font-bold text-gray-800 mb-6 border-b pb-3"></h2>
+            
+            <!-- Error Message Display -->
+            <div th:if="${#fields.hasErrors('global')}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
+                <p>Form ဖြည့်ရာတွင် အမှားများရှိနေပါသည်။ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။</p>
+            </div>
+
+            <form th:action="@{${jobPosting.id == null ? '/employer/jobs/new' : '/employer/jobs/edit/' + jobPosting.id}}" 
+                  th:object="${jobPosting}" 
+                  method="post">
+                  
+                <!-- Hidden ID for Edit Mode -->
+                <input type="hidden" th:field="*{id}" th:if="${jobPosting.id != null}">
+
+                <!-- 1. Job Details Section -->
+                <h3 class="text-xl font-semibold mt-6 mb-4 text-indigo-700">အလုပ်အကိုင် အသေးစိတ်အချက်အလက်များ</h3>
+                
+                <div class="mb-4">
+                    <label for="title" class="block text-sm font-medium text-gray-700 mb-1">ရာထူး</label>
+                    <input type="text" id="title" th:field="*{title}" required 
+                           class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                    <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="text-red-500 text-xs mt-1"></p>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">အလုပ်ဖော်ပြချက်</label>
+                    <textarea id="description" th:field="*{description}" required 
+                              rows="5"
+                              class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                    <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-red-500 text-xs mt-1"></p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">တည်နေရာ</label>
+                        <input type="text" id="location" th:field="*{location}" required 
+                               class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        <p th:if="${#fields.hasErrors('location')}" th:errors="*{location}" class="text-red-500 text-xs mt-1"></p>
+                    </div>
+                    <div>
+                        <label for="salary" class="block text-sm font-medium text-gray-700 mb-1">လစာ</label>
+                        <input type="text" id="salary" th:field="*{salary}" 
+                               placeholder="e.g. 500,000 - 800,000 MMK"
+                               class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        <p th:if="${#fields.hasErrors('salary')}" th:errors="*{salary}" class="text-red-500 text-xs mt-1"></p>
+                    </div>
+                    <div>
+                        <label for="jobType" class="block text-sm font-medium text-gray-700 mb-1">အလုပ်အမျိုးအစား</label>
+                        <select id="jobType" th:field="*{jobType}" required
+                               class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                             <option value="">အမျိုးအစားရွေးပါ</option>
+                             <option value="Full-time">Full-time</option>
+                             <option value="Part-time">Part-time</option>
+                             <option value="Contract">Contract</option>
+                             <option value="Internship">Internship</option>
+                        </select>
+                        <p th:if="${#fields.hasErrors('jobType')}" th:errors="*{jobType}" class="text-red-500 text-xs mt-1"></p>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                     <label for="category" class="block text-sm font-medium text-gray-700 mb-1">အဓိကလုပ်ငန်းကဏ္ဍ (Category)</label>
+                     <input type="text" id="category" th:field="*{category}" 
+                            placeholder="e.g. IT, Hospitality, Administration, Marketing"
+                            class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                     <p th:if="${#fields.hasErrors('category')}" th:errors="*{category}" class="text-red-500 text-xs mt-1"></p>
+                </div>
+
+
+                <!-- 2. Application Requirements Section (NEW FEATURE) -->
+                <h3 class="text-xl font-semibold mt-8 mb-4 text-indigo-700 border-t pt-4">လျှောက်လွှာ လိုအပ်ချက်များ (Fields)</h3>
+                <p class="text-sm text-gray-600 mb-4">ဤအလုပ်လျှောက်ထားရာတွင် လျှောက်ထားသူ၏ Profile မှ မည်သည့်အချက်အလက်များကို ထပ်မံဖြည့်စွက်ရန် လိုအပ်သည်ကို ရွေးချယ်ပါ။</p>
+
+                <div th:if="${allFields != null and not allFields.isEmpty()}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <!-- Group fields by Category for cleaner UI -->
+                    <th:block th:each="categoryName : ${allFields.![category].toSet()}">
+                        <div class="field-group">
+                            <h4 th:text="${categoryName}" class="field-group-title text-lg text-indigo-600">Category Name</h4>
+                            
+                            <div th:each="field : ${allFields}">
+                                <div th:if="${field.category == categoryName}">
+                                    <label class="checkbox-label text-sm text-gray-700">
+                                        <!-- Checkbox input -->
+                                        <input type="checkbox" 
+                                               name="requiredFieldIds" 
+                                               th:value="${field.id}"
+                                               th:checked="${jobPosting.requiredFields != null and jobPosting.requiredFields.contains(field)}"
+                                               class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 me-2">
+                                        
+                                        <!-- Field Name -->
+                                        <span th:text="${field.fieldName}" class="font-medium"></span>
+                                        <!-- Field Type Hint -->
+                                        <span class="text-gray-400 ms-2 text-xs" th:text="'(' + ${field.fieldType} + ')'"> (TEXT)</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                    
+                </div>
+                
+                <div th:unless="${allFields != null and not allFields.isEmpty()}" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+                    <p class="font-bold">သတိပြုရန်:</p>
+                    <p>ရွေးချယ်ရန် Application Field စံစာရင်းများ မတွေ့ရသေးပါ။ Admin မှ ထည့်သွင်းရန် လိုအပ်ပါသည်။</p>
+                </div>
+
+
+                <!-- 3. Other Settings -->
+                <div class="mt-8 border-t pt-4">
+                     <label class="inline-flex items-center text-gray-700">
+                        <input type="checkbox" id="isCvRequired" th:field="*{isCvRequired}" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-2 text-sm font-medium">လျှောက်လွှာတင်ရာတွင် CV/Resume File တင်ရန် လိုအပ်ပါသလား?</span>
+                    </label>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions mt-8">
+                    <button type="submit" class="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                        <span th:text="${jobPosting.id == null ? 'အလုပ်အသစ်တင်မည်' : 'ပြောင်းလဲမှုများကို သိမ်းဆည်းမည်'}">Save Job</span>
+                    </button>
+                    <a th:href="@{/employer/jobs}" class="block text-center mt-3 text-sm text-gray-600 hover:text-indigo-600">စာရင်းသို့ ပြန်သွားမည်</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Footer Fragment Placeholder -->
+    <div th:replace="~{fragments/footer :: main-footer}"></div>
+</body>
+</html>
+
+

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="my" 
+<html lang="my"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
@@ -9,6 +9,20 @@
     <link rel="stylesheet" th:href="@{/bootstrap/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Responsive tweaks for the filter form */
+        .filter-section {
+            padding: 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            background-color: #f8f9fa;
+        }
+        @media (max-width: 767.98px) {
+            .filter-section .row > div { margin-bottom: 10px; }
+            .filter-section .btn { width: 100%; }
+        }
+    </style>
 </head>
 <body>
 
@@ -22,10 +36,118 @@
     <h1 th:text="${job.title}" class="mb-3">Job Title</h1>
     <h2 class="h4 text-muted" th:text="'စုစုပေါင်း လျှောက်လွှာ: ' + ${applications.size()}">Total Applications: 0</h2>
 
+    <!-- 🎯 NEW: APPLICANT FILTER FORM -->
+    <div class="filter-section">
+        <form th:action="@{'/employer/jobs/' + ${job.id} + '/applicants'}" method="get">
+            <h5 class="mb-3"><i class="fas fa-filter mr-2"></i> လျှောက်ထားသူ စစ်ထုတ်ခြင်း</h5>
+            <div class="row">
+
+                <!-- Status Filter -->
+                <div class="col-md-3 col-sm-6">
+                    <label for="status" class="form-label small text-muted">အခြေအနေ</label>
+                    <select id="status" name="status" class="form-control form-control-sm">
+                        <option value="">အားလုံး</option>
+                        <!-- Iterate through ApplicationStatus Enum passed from controller -->
+                        <option th:each="statusOption : ${allStatuses}"
+                                th:value="${statusOption.name()}"
+                                th:text="${statusOption.name()}"
+                                th:selected="${selectedStatus == statusOption.name()}"></option>
+                    </select>
+                </div>
+
+                <!-- Minimum Experience Filter -->
+                <div class="col-md-3 col-sm-6">
+                    <label for="minExp" class="form-label small text-muted">အနည်းဆုံး အတွေ့အကြုံ (နှစ်)</label>
+                    <input type="number" id="minExp" name="minExp" min="0" step="1" class="form-control form-control-sm"
+                           th:value="${minExpFilter}" placeholder="e.g., 2">
+                </div>
+
+                <!-- Keyword Filter -->
+                <div class="col-md-4 col-sm-12">
+                    <label for="keyword" class="form-label small text-muted">Keyword (Skills, Summary, Answers)</label>
+                    <input type="search" id="keyword" name="keyword" class="form-control form-control-sm"
+                           th:value="${keywordFilter}" placeholder="Java, Management, Team lead">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-md-2 col-sm-12 d-flex align-items-end mt-2 mt-md-0">
+                    <button type="submit" class="btn btn-primary btn-sm me-2"><i class="fas fa-search"></i> ရှာဖွေပါ</button>
+                    <!-- Clear filter button (redirects to the base URL without parameters) -->
+                    <a th:href="@{'/employer/jobs/' + ${job.id} + '/applicants'}" class="btn btn-outline-secondary btn-sm">ဖျက်သိမ်း</a>
+                </div>
+
+            </div>
+        </form>
+    </div>
+    <!-- END: FILTER FORM -->
+
+    <!-- APPLICANTS TABLE -->
+    <div th:if="${applications.isEmpty()}" class="alert alert-warning">
+        <p th:if="${selectedStatus != null || minExpFilter != null || keywordFilter != null}">
+            စစ်ထုတ်ထားသော အခြေအနေများအရ လျှောက်ထားသူ မတွေ့ရှိပါ။
+        </p>
+        <p th:unless="${selectedStatus != null || minExpFilter != null || keywordFilter != null}">
+            ဤအလုပ်အတွက် လျှောက်ထားသူများ မရှိသေးပါ။
+        </p>
     </div>
 
-<div th:replace="fragments/footer :: main-footer"></div> 
+    <div th:unless="${applications.isEmpty()}" class="table-responsive">
+        <table class="table table-hover table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>အမည်</th>
+                    <th>ရာထူး</th>
+                    <th>အတွေ့အကြုံ (နှစ်)</th>
+                    <th>လျှောက်လွှာ အခြေအနေ</th>
+                    <th>လျှောက်ထားသည့်နေ့စွဲ</th>
+                    <th>လုပ်ဆောင်ချက်</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="app : ${applications}">
+                    <!-- Applicant Name and Profile Link -->
+                    <td>
+                        <a th:href="@{'/employer/jobs/applications/' + ${app.id} + '/profile'}" class="font-weight-bold">
+                            <span th:text="${app.applicantProfile?.fullName ?: 'Profile Not Found'}">Applicant Name</span>
+                        </a>
+                    </td>
+                    <!-- Current Title -->
+                    <td th:text="${app.applicantProfile?.currentTitle ?: 'N/A'}">Current Title</td>
+
+                    <!-- Total Experience -->
+                    <td th:text="${app.applicantProfile?.totalExperienceYears ?: 0}">0</td>
+
+                    <!-- Application Status -->
+                    <td>
+                        <span class="badge p-2"
+                              th:classappend="${app.status.name() == 'APPLIED' ? 'bg-primary' :
+                                             (app.status.name() == 'REVIEWING' ? 'bg-info' :
+                                             (app.status.name() == 'INTERVIEW' ? 'bg-warning' :
+                                             'bg-success'))}"
+                              th:text="${app.status}">APPLIED</span>
+                    </td>
+
+                    <!-- Application Date -->
+                    <td th:text="${#temporals.format(app.applicationDate, 'dd/MM/yyyy')}">Date</td>
+
+                    <!-- Actions -->
+                    <td>
+                        <a th:href="@{'/employer/jobs/applications/' + ${app.id} + '/profile'}" class="btn btn-sm btn-outline-info" title="Profile ကြည့်ရန်">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <!-- Future: Status Update Button -->
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<div th:replace="fragments/footer :: main-footer"></div>
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>
+
+

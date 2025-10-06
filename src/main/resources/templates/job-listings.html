@@ -6,25 +6,123 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .job-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border-left: 5px solid #007bff;
+            border-radius: 8px;
+        }
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .job-title { color: #333; font-weight: 600; }
+        .job-location { color: #6c757d; }
+        .job-type-badge { font-size: 0.85rem; font-weight: 500; padding: 0.4em 0.8em; border-radius: 15px; }
+    </style>
 </head>
 <body>
     <div th:replace="~{fragments/header :: main-header}"></div>
-    
+
     <div class="container my-5">
-        <h1>အလုပ်အကိုင်များ စာရင်း (Home Page)</h1>
-        <p>JobController မှ Data များ ပေးပို့နေပါသည်။ Template Error ရှင်းလင်းပြီး။</p>
-        
-        <div th:if="${jobs != null}" class="alert alert-info">
-            ယခုတွင် Job အရေအတွက် <span th:text="${jobs.size()}">0</span> ခု ရှိပါသည်။
+        <h1 class="mb-4 text-center">အလုပ်အကိုင်များ ရှာဖွေပါ</h1>
+
+        <div class="row mb-5 justify-content-center">
+            <div class="col-lg-8">
+                <form th:action="@{/jobs}" method="get" class="input-group shadow-sm rounded-pill p-1 bg-white border">
+                    <input type="text" name="query" th:value="${searchQuery}" 
+                           class="form-control border-0 bg-transparent" 
+                           placeholder="အလုပ်အမည်၊ ကုမ္ပဏီ သို့မဟုတ် မြို့ အမည်ဖြင့် ရှာဖွေပါ..." 
+                           aria-label="Search job listings">
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                        <i class="fas fa-search me-2"></i> ရှာဖွေမည်
+                    </button>
+                </form>
+            </div>
         </div>
-        
+
+        <!-- Jobs Count -->
+        <div th:if="${searchQuery != null and !searchQuery.isEmpty()}" class="mb-4">
+            <h4 class="text-secondary">
+                ရှာဖွေမှု ရလဒ်: <span class="text-primary" th:text="'&quot;' + ${searchQuery} + '&quot;'"></span>
+                (<span th:text="${jobsPage != null} ? ${jobsPage.totalElements} : 0">0</span> ခု)
+            </h4>
+        </div>
+        <div th:if="${searchQuery == null or searchQuery.isEmpty()}" class="mb-4">
+            <h4 class="text-secondary">အလုပ်အကိုင် အားလုံး (<span th:text="${jobsPage != null} ? ${jobsPage.totalElements} : 0">0</span> ခု)</h4>
+        </div>
+
+        <!-- Job Listings -->
+        <div class="row">
+            <div th:if="${jobsPage == null or jobsPage.content.isEmpty()}" class="col-12">
+                <div class="alert alert-warning text-center">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span th:if="${searchQuery != null and !searchQuery.isEmpty()}">
+                        <strong th:text="${searchQuery}"></strong> အတွက် သက်ဆိုင်ရာ အလုပ်အကိုင်များ မတွေ့ရှိပါ။
+                    </span>
+                    <span th:unless="${searchQuery != null and !searchQuery.isEmpty()}">
+                        လက်ရှိတွင် တက်ကြွသော အလုပ်အကိုင်များ မရှိသေးပါ။
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Loop through jobs -->
+            <div th:each="job : ${jobsPage != null} ? ${jobsPage.content} : ${#lists.newArrayList()}" class="col-12 mb-4">
+                <div class="card p-4 job-card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h3 class="job-title mb-1">
+                                    <a th:href="@{/jobs/{jobId}(jobId=${job.id})}" th:text="${job.title}" class="text-decoration-none text-dark">Job Title Placeholder</a>
+                                </h3>
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-building me-1"></i> 
+                                    <span th:text="${job.employerUser?.username} ?: 'Unknown Company'">Employer Name</span>
+                                </p>
+                            </div>
+                            <span class="job-type-badge text-bg-info" th:text="${job.jobType} ?: 'Full-Time'">Job Type</span>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <p class="job-location mb-0">
+                                    <i class="fas fa-map-marker-alt me-1 text-primary"></i> 
+                                    <span th:text="${job.location} ?: 'Remote'">Location</span>
+                                </p>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <p class="text-success mb-0">
+                                    <i class="fas fa-money-bill-wave me-1"></i> 
+                                    <span th:text="${job.salaryRange} ?: 'Negotiable'">Salary Range</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <p class="mt-3 text-secondary" style="font-size: 0.95rem;">
+                            <span th:text="${#strings.abbreviate(job.description, 150)}">
+                                This is a short description of the job posting...
+                            </span>
+                        </p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                            <small class="text-muted">
+                                <i class="far fa-clock me-1"></i> 
+                                <span th:text="'တင်ခဲ့သည့် ရက်စွဲ: ' + ${job.postedDate}">Posted Date: 2025-09-30</span>
+                            </small>
+                            <a th:href="@{/jobs/{jobId}(jobId=${job.id})}" class="btn btn-sm btn-outline-primary">အသေးစိတ်ကြည့်ရန်</a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-    
+
     <div th:replace="~{fragments/footer :: main-footer}"></div>
-   
-    <script th:src="@{/js/jquery-3.7.1.min.js}"></script> 
-    <script th:src="@{/js/bootstrap.bundle.min.js}"></script> 
+
+    <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 
 </body>
 </html>
-

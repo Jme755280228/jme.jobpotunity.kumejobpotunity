@@ -83,7 +83,7 @@ public class ApplicantProfileController {
 
         // 3. User Entity နဲ့ ချိတ်ဆက်ပြီး Relationship Consistency ကို ထိန်းသိမ်းခြင်း
         profile.setUser(user);
-        user.setApplicantProfile(profile); 
+        user.setProfile(profile); 
         
         // 4. Data သိမ်းဆည်းခြင်း
         applicantProfileService.saveOrUpdateProfile(profile);

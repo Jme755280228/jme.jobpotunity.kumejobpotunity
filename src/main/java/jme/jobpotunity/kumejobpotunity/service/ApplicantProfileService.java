@@ -29,7 +29,7 @@ public class ApplicantProfileService {
      */
     public Optional<ApplicantProfile> getProfileByUser(User user) {
         // User Entity မှာ OneToOne relationship ချိတ်ထားသောကြောင့် profile ကို တိုက်ရိုက်ရယူနိုင်
-        return Optional.ofNullable(user.getApplicantProfile());
+        return Optional.ofNullable(user.getProfile());
     }
     
     /**
@@ -45,7 +45,7 @@ public class ApplicantProfileService {
      * Profile ရှိ/မရှိ စစ်ဆေးခြင်း
      */
      public boolean hasProfile(User user) {
-         return user.getApplicantProfile() != null;
+         return user.getProfile() != null;
      }
 
     // နောက်ပိုင်း Controller ကနေ အလွယ်တကူ ခေါ်သုံးနိုင်မယ့် Logic တွေ ဒီနေရာမှာ ထပ်ထည့်ပါမယ်။
