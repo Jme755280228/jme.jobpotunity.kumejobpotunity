@@ -2,62 +2,55 @@ package jme.jobpotunity.kumejobpotunity.entity;
 
 import jakarta.persistence.*;
 
+/**
+ * JobExperience Entity
+ * -------------------------
+ * ✅ Belongs to ApplicantProfile (Many-to-One)
+ * ✅ Inherits common fields from BaseEntity
+ * ✅ Contains companyName, position, startYear, endYear
+ */
 @Entity
-@Table(name = "applicant_education")
-public class Education {
+@Table(name = "job_experiences")
+public class JobExperience extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    // Many Education entries can belong to One ApplicantProfile
+    // ========================
+    // 🔗 RELATIONSHIP
+    // ========================
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "applicant_profile_id", nullable = false)
     private ApplicantProfile applicantProfile;
-    
-    // ရရှိသောဘွဲ့ သို့မဟုတ် အောင်လက်မှတ်အမည် (ဥပမာ: B.Sc. CS, Diploma in IT)
+
+    // ========================
+    // Fields
+    // ========================
     @Column(nullable = false)
-    private String degree;
+    private String companyName;
 
-    // ကျောင်း/တက္ကသိုလ်အမည်
-    @Column(nullable = false)
-    private String schoolName;
-    
-    // ဘာသာရပ် (ဥပမာ: Computer Science, Business Administration)
-    private String major;
-    
-    // ဘွဲ့ရရှိသည့် ခုနှစ် သို့မဟုတ် ပြီးဆုံးသည့် ခုနှစ်
-    private Integer graduationYear;
-    
-    // GPA သို့မဟုတ် ရမှတ် (Optional)
-    private Double gpa; 
+    @Column(length = 100)
+    private String position;
 
-    // --- 1. Constructors ---
+    @Column
+    private int startYear;
 
-    // No-Args Constructor (JPA requirement)
-    public Education() {
-    }
+    @Column
+    private int endYear;
 
-    // All-Args Constructor 
-    public Education(ApplicantProfile applicantProfile, String degree, String schoolName, String major, Integer graduationYear, Double gpa) {
+    // ========================
+    // Constructors
+    // ========================
+    public JobExperience() {}
+
+    public JobExperience(ApplicantProfile applicantProfile, String companyName, String position, int startYear, int endYear) {
         this.applicantProfile = applicantProfile;
-        this.degree = degree;
-        this.schoolName = schoolName;
-        this.major = major;
-        this.graduationYear = graduationYear;
-        this.gpa = gpa;
+        this.companyName = companyName;
+        this.position = position;
+        this.startYear = startYear;
+        this.endYear = endYear;
     }
 
-    // --- 2. Getters and Setters ---
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
+    // ========================
+    // Getters & Setters
+    // ========================
     public ApplicantProfile getApplicantProfile() {
         return applicantProfile;
     }
@@ -66,43 +59,35 @@ public class Education {
         this.applicantProfile = applicantProfile;
     }
 
-    public String getDegree() {
-        return degree;
+    public String getCompanyName() {
+        return companyName;
     }
 
-    public void setDegree(String degree) {
-        this.degree = degree;
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 
-    public String getSchoolName() {
-        return schoolName;
+    public String getPosition() {
+        return position;
     }
 
-    public void setSchoolName(String schoolName) {
-        this.schoolName = schoolName;
+    public void setPosition(String position) {
+        this.position = position;
     }
 
-    public String getMajor() {
-        return major;
+    public int getStartYear() {
+        return startYear;
     }
 
-    public void setMajor(String major) {
-        this.major = major;
+    public void setStartYear(int startYear) {
+        this.startYear = startYear;
     }
 
-    public Integer getGraduationYear() {
-        return graduationYear;
+    public int getEndYear() {
+        return endYear;
     }
 
-    public void setGraduationYear(Integer graduationYear) {
-        this.graduationYear = graduationYear;
-    }
-
-    public Double getGpa() {
-        return gpa;
-    }
-
-    public void setGpa(Double gpa) {
-        this.gpa = gpa;
+    public void setEndYear(int endYear) {
+        this.endYear = endYear;
     }
 }

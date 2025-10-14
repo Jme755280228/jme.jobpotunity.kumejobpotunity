@@ -6,5 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface JobExperienceRepository extends JpaRepository<JobExperience, Long> {
-    // Custom query များကို လိုအပ်မှ ထပ်ထည့်နိုင်ပါသည်။
+
+    // Optional: ApplicantProfile ID ဖြင့် experience ရှာဖွေနိုင်ရန်
+    // List<JobExperience> findByApplicantProfileId(Long applicantProfileId);
 }

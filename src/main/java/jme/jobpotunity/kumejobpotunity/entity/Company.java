@@ -1,100 +1,52 @@
 package jme.jobpotunity.kumejobpotunity.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.OneToMany;
-import java.util.List;
-import java.util.ArrayList;
+import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-public class Company {
+@Table(name = "companies")
+public class Company extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    @Column(nullable = false)
     private String name;
-    private String industry;
-    private String location;
 
-    // 🎯 FIX 2.1: DataSeeder မှ လိုအပ်သော description field ကို ထည့်သွင်းခြင်း
+    @Column(length = 1000)
     private String description;
 
-    // 🎯 FIX 2.2: DataSeeder မှ လိုအပ်သော contactEmail field ကို ထည့်သွင်းခြင်း
+    @Column(nullable = false)
     private String contactEmail;
 
-    @OneToMany(mappedBy = "company")
-    private List<JobPosting> jobPostings = new ArrayList<>();
+    @OneToOne
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
 
-    // --- Constructors ---
-    public Company() {
-    }
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<JobPosting> jobPostings = new HashSet<>();
 
-    public Company(String name, String industry, String location) {
+    // Constructors
+    public Company() {}
+
+    public Company(String name, String description, String contactEmail, User owner) {
         this.name = name;
-        this.industry = industry;
-        this.location = location;
-    }
-
-    // --- Getters and Setters ---
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getIndustry() {
-        return industry;
-    }
-
-    public void setIndustry(String industry) {
-        this.industry = industry;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    // 🎯 FIX 2.3: description အတွက် Getter နှင့် Setter
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
         this.description = description;
-    }
-
-    // 🎯 FIX 2.4: contactEmail အတွက် Getter နှင့် Setter
-    public String getContactEmail() {
-        return contactEmail;
-    }
-
-    public void setContactEmail(String contactEmail) {
         this.contactEmail = contactEmail;
+        this.owner = owner;
     }
 
-    // jobPostings အတွက် Getter နှင့် Setter
-    public List<JobPosting> getJobPostings() {
-        return jobPostings;
-    }
+    // Getters / Setters
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public void setJobPostings(List<JobPosting> jobPostings) {
-        this.jobPostings = jobPostings;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getContactEmail() { return contactEmail; }
+    public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }
+
+    public User getOwner() { return owner; }
+    public void setOwner(User owner) { this.owner = owner; }
+
+    public Set<JobPosting> getJobPostings() { return jobPostings; }
+    public void setJobPostings(Set<JobPosting> jobPostings) { this.jobPostings = jobPostings; }
 }

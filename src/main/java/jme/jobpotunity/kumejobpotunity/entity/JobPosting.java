@@ -1,92 +1,68 @@
 package jme.jobpotunity.kumejobpotunity.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-public class JobPosting {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Table(name = "job_postings")
+public class JobPosting extends BaseEntity {
 
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 5000)
     private String description;
 
-    private String location;
-    private String employmentType;
-    private String salary;
-    private String category;
-
-    @Column(nullable = false)
-    private boolean isApproved = false;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "employer_user_id", nullable = false)
-    private User employerUser;
+    @JoinColumn(name = "employer_id")
+    private User employer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
     private Company company;
 
-    private LocalDateTime postedDate;
-
-    // ApplicationFields mapping
     @OneToMany(mappedBy = "jobPosting", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<ApplicationField> requiredFields = new ArrayList<>();
+    private Set<JobApplication> applications = new HashSet<>();
 
-    // JobApplications mapping
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<JobApplication> applications = new ArrayList<>();
+    @Column(nullable = false)
+    private boolean isApproved = false;
 
-    // --- Constructors ---
+    @Column(nullable = false)
+    private LocalDateTime postedDate = LocalDateTime.now();
+
+    // Constructors
     public JobPosting() {}
 
-    // --- Getters and Setters ---
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public JobPosting(String title, String description, User employer, Company company) {
+        this.title = title;
+        this.description = description;
+        this.employer = employer;
+        this.company = company;
+        this.isApproved = false;
+        this.postedDate = LocalDateTime.now();
+    }
 
+    // Getters / Setters
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
-
-    public String getEmploymentType() { return employmentType; }
-    public void setEmploymentType(String employmentType) { this.employmentType = employmentType; }
-
-    public String getSalary() { return salary; }
-    public void setSalary(String salary) { this.salary = salary; }
-
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-
-    public boolean isApproved() { return isApproved; }
-    public void setApproved(boolean approved) { isApproved = approved; }
-
-    public User getEmployerUser() { return employerUser; }
-    public void setEmployerUser(User employerUser) { this.employerUser = employerUser; }
+    public User getEmployer() { return employer; }
+    public void setEmployer(User employer) { this.employer = employer; }
 
     public Company getCompany() { return company; }
     public void setCompany(Company company) { this.company = company; }
 
+    public Set<JobApplication> getApplications() { return applications; }
+    public void setApplications(Set<JobApplication> applications) { this.applications = applications; }
+
+    public boolean isApproved() { return isApproved; }
+    public void setApproved(boolean approved) { isApproved = approved; }
+
     public LocalDateTime getPostedDate() { return postedDate; }
     public void setPostedDate(LocalDateTime postedDate) { this.postedDate = postedDate; }
-
-    public List<ApplicationField> getRequiredFields() { return requiredFields; }
-    public void setRequiredFields(List<ApplicationField> requiredFields) { this.requiredFields = requiredFields; }
-
-    public List<JobApplication> getApplications() { return applications; }
-    public void setApplications(List<JobApplication> applications) { this.applications = applications; }
 }

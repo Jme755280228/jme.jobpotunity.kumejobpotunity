@@ -1,91 +1,47 @@
 package jme.jobpotunity.kumejobpotunity.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
+/**
+ * ApplicationField Entity
+ * -----------------------
+ * ✅ Each field belongs to a JobApplication
+ * ✅ Stores dynamic form data (e.g., resume, cover letter, answers)
+ */
 @Entity
 @Table(name = "application_fields")
-public class ApplicationField {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class ApplicationField extends BaseEntity {
 
-    private String fieldName;
-    private String fieldType;
-    private String fieldCategory;
-    private boolean required;
-
-    // 🎯 FIX 3.1: JobPosting နှင့် Many-to-One relationship ကို ထည့်သွင်းခြင်း
-    // ApplicationField တစ်ခုသည် JobPosting တစ်ခုနှင့် သက်ဆိုင်သည်။
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_posting_id")
-    private JobPosting jobPosting;
-    
-    // --- Constructors ---
-    public ApplicationField() {
-    }
+    @JoinColumn(name = "job_application_id", nullable = false)
+    private JobApplication jobApplication;
 
-    public ApplicationField(String fieldName, String fieldType, String fieldCategory) {
+    @Column(nullable = false, length = 100)
+    private String fieldName;
+
+    @Column(length = 2000)
+    private String fieldValue;
+
+    // ------------------------
+    // Constructors
+    // ------------------------
+    public ApplicationField() {}
+
+    public ApplicationField(JobApplication jobApplication, String fieldName, String fieldValue) {
+        this.jobApplication = jobApplication;
         this.fieldName = fieldName;
-        this.fieldType = fieldType;
-        this.fieldCategory = fieldCategory;
-        this.required = false; 
+        this.fieldValue = fieldValue;
     }
 
-    // --- Getters and Setters ---
-    public Long getId() {
-        return id;
-    }
+    // ------------------------
+    // Getters & Setters
+    // ------------------------
+    public JobApplication getJobApplication() { return jobApplication; }
+    public void setJobApplication(JobApplication jobApplication) { this.jobApplication = jobApplication; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getFieldName() { return fieldName; }
+    public void setFieldName(String fieldName) { this.fieldName = fieldName; }
 
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
-    }
-
-    public String getFieldType() {
-        return fieldType;
-    }
-
-    public void setFieldType(String fieldType) {
-        this.fieldType = fieldType;
-    }
-
-    public String getFieldCategory() {
-        return fieldCategory;
-    }
-
-    public void setFieldCategory(String fieldCategory) {
-        this.fieldCategory = fieldCategory;
-    }
-
-    public boolean isRequired() {
-        return required;
-    }
-
-    public void setRequired(boolean required) {
-        this.required = required;
-    }
-
-    // 🎯 FIX 3.2: EmployerController မှ ခေါ်ဆိုသော setJobPosting() method ကို ထည့်သွင်းခြင်း
-    public JobPosting getJobPosting() {
-        return jobPosting;
-    }
-
-    public void setJobPosting(JobPosting jobPosting) {
-        this.jobPosting = jobPosting;
-    }
+    public String getFieldValue() { return fieldValue; }
+    public void setFieldValue(String fieldValue) { this.fieldValue = fieldValue; }
 }

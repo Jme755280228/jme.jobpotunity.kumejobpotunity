@@ -6,120 +6,57 @@ import java.util.List;
 
 @Entity
 @Table(name = "applicant_profiles")
-public class ApplicantProfile {
+public class ApplicantProfile extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    // One-to-One: Applicant Profile တစ်ခုသည် User Account တစ်ခုနှင့်သာ သက်ဆိုင်သည်
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", unique = true, nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    // ပင်မ ကိုယ်ရေးအချက်အလက်များ
+    @OneToMany(mappedBy = "applicantProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Education> educations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "applicantProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<JobExperience> jobExperiences = new ArrayList<>();
+
     @Column(nullable = false)
     private String fullName;
-    private String email;
+
+    @Column(length = 20)
     private String phone;
-    private String currentTitle;
 
-    // အတွေ့အကြုံ စုစုပေါင်း နှစ် (Filtering အတွက် အရေးကြီး)
-    private Integer totalExperienceYears = 0;
+    @Column(length = 250)
+    private String address;
 
-    // လျှောက်ထားသူရဲ့ ကိုယ်ရေးအကျဉ်းချုပ် (Summary)
-    @Lob // Large Object for long text
-    private String professionalSummary;
+    @Column(length = 500)
+    private String summary;
 
-    // ကျွမ်းကျင်မှုများ (Skills) ကို Database မှာ String Array သို့မဟုတ် Comma-separated String အဖြစ် သိမ်းဆည်းနိုင်သည်
-    @Lob
-    private String skills;
+    // Constructors
+    public ApplicantProfile() {}
 
-    private String linkedInUrl;
-    private String portfolioUrl;
-
-    // One-to-Many: အလုပ်အတွေ့အကြုံများ (Cascade.ALL ထားခြင်းဖြင့် Profile ဖျက်ပါက ၎င်း၏ Experiences များလည်း ပျက်မည်)
-    @OneToMany(mappedBy = "applicantProfile", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<JobExperience> experiences = new ArrayList<>();
-
-    // One-to-Many: ပညာအရည်အချင်းများ
-    @OneToMany(mappedBy = "applicantProfile", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Education> education = new ArrayList<>();
-
-
-    // --- 1. Constructors ---
-    public ApplicantProfile() {
+    public ApplicantProfile(User user, String fullName) {
+        this.user = user;
+        this.fullName = fullName;
     }
 
-    // --- 2. Getters and Setters ---
-    // (Omitted for brevity, but all original getters/setters are assumed to be here)
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // Getters / Setters
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
-    public String getCurrentTitle() { return currentTitle; }
-    public void setCurrentTitle(String currentTitle) { this.currentTitle = currentTitle; }
-    public Integer getTotalExperienceYears() { return totalExperienceYears; }
-    public void setTotalExperienceYears(Integer totalExperienceYears) { this.totalExperienceYears = totalExperienceYears; }
-    public String getProfessionalSummary() { return professionalSummary; }
-    public void setProfessionalSummary(String professionalSummary) { this.professionalSummary = professionalSummary; }
-    public String getSkills() { return skills; }
-    public void setSkills(String skills) { this.skills = skills; }
-    public String getLinkedInUrl() { return linkedInUrl; }
-    public void setLinkedInUrl(String linkedInUrl) { this.linkedInUrl = linkedInUrl; }
-    public String getPortfolioUrl() { return portfolioUrl; }
-    public void setPortfolioUrl(String portfolioUrl) { this.portfolioUrl = portfolioUrl; }
-    public List<JobExperience> getExperiences() { return experiences; }
-    public void setExperiences(List<JobExperience> experiences) { this.experiences = experiences; }
-    public List<Education> getEducation() { return education; }
-    public void setEducation(List<Education> education) { this.education = education; }
 
-    // Helper method for Experiences
-    public void addExperience(JobExperience experience) {
-        this.experiences.add(experience);
-        experience.setApplicantProfile(this);
-    }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
-    public void removeExperience(JobExperience experience) {
-        this.experiences.remove(experience);
-        experience.setApplicantProfile(null);
-    }
+    public String getSummary() { return summary; }
+    public void setSummary(String summary) { this.summary = summary; }
 
-    // Helper method for Education
-    public void addEducation(Education edu) {
-        this.education.add(edu);
-        edu.setApplicantProfile(this);
-    }
+    public List<Education> getEducations() { return educations; }
+    public void setEducations(List<Education> educations) { this.educations = educations; }
 
-    public void removeEducation(Education edu) {
-        this.education.remove(edu);
-        edu.setApplicantProfile(null);
-    }
-
-    /**
-     * Business Rule: လျှောက်လွှာတင်ဖို့ Profile ပြည့်စုံမှု ရှိ/မရှိ စစ်ဆေးခြင်း။
-     * စည်းကမ်းချက်: အမည်၊ လက်ရှိရာထူး ဖြည့်ထားရမည် AND (အလုပ်အတွေ့အကြုံ သို့မဟုတ် ပညာရေး တစ်ခုခု) ရှိရမည်။
-     */
-    public boolean isProfileComplete() {
-        // 1. Basic Info (FullName, CurrentTitle)
-        boolean hasBasicInfo = this.fullName != null && !this.fullName.trim().isEmpty() &&
-                               this.currentTitle != null && !this.currentTitle.trim().isEmpty();
-        
-        // 2. Core Data (Experiences OR Education)
-        // 💡 Note: FetchType.LAZY ဖြစ်နေရင် Controller က Service ထဲမှာ Fetch Join မလုပ်ရင် ဒီ List တွေက null ဖြစ်နေနိုင်ပါတယ်။
-        // သို့သော် DataSeeder ထဲမှာ Data ထည့်ထားရင် အနည်းဆုံး တစ်ခုခု ရှိနေရပါမယ်။
-        boolean hasCoreData = (this.experiences != null && !this.experiences.isEmpty()) ||
-                              (this.education != null && !this.education.isEmpty());
-
-        return hasBasicInfo && hasCoreData;
-    }
-
+    public List<JobExperience> getJobExperiences() { return jobExperiences; }
+    public void setJobExperiences(List<JobExperience> jobExperiences) { this.jobExperiences = jobExperiences; }
 }
-

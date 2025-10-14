@@ -1,12 +1,8 @@
 package jme.jobpotunity.kumejobpotunity.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
-/**
- * Job လျှောက်ထားရာတွင် Job Posting မှ တောင်းဆိုသော
- * စိတ်ကြိုက် Field များ (ApplicationField) အတွက် လျှောက်ထားသူ၏ အဖြေများကို သိမ်းဆည်းသည့် Entity.
- * ၎င်းသည် JobApplication တစ်ခုနှင့် ApplicationField တစ်ခုစီကို ချိတ်ဆက်သည်။
- */
 @Entity
 @Table(name = "job_applicant_responses")
 public class JobApplicantResponse {
@@ -15,56 +11,34 @@ public class JobApplicantResponse {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ဤအဖြေသည် မည်သည့် Job Application နှင့် သက်ဆိုင်သနည်း။ (One-to-Many relationship)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_application_id", nullable = false)
     private JobApplication jobApplication;
 
-    // ဤအဖြေသည် မည်သည့် စံ Field Schema နှင့် သက်ဆိုင်သနည်း။ (EAGER load ဖြင့် Field Name ကို ယူရန်)
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "application_field_id", nullable = false)
-    private ApplicationField applicationField;
+    @Column(length = 1000)
+    private String message;
 
-    // လျှောက်ထားသူ၏ အဖြေတန်ဖိုး (STRING အဖြစ် သိမ်းဆည်းထားသည်)
-    @Lob // Long text (or file path/number serialized as string)
-    private String answerValue;
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    // Default Constructor
+    // Constructors
     public JobApplicantResponse() {}
 
-    // Getters and Setters
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public JobApplication getJobApplication() {
-        return jobApplication;
-    }
-
-    public void setJobApplication(JobApplication jobApplication) {
+    public JobApplicantResponse(JobApplication jobApplication, String message) {
         this.jobApplication = jobApplication;
+        this.message = message;
+        this.createdAt = LocalDateTime.now();
     }
 
-    public ApplicationField getApplicationField() {
-        return applicationField;
-    }
+    // Getters / Setters
+    public Long getId() { return id; }
 
-    public void setApplicationField(ApplicationField applicationField) {
-        this.applicationField = applicationField;
-    }
+    public JobApplication getJobApplication() { return jobApplication; }
+    public void setJobApplication(JobApplication jobApplication) { this.jobApplication = jobApplication; }
 
-    public String getAnswerValue() {
-        return answerValue;
-    }
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
 
-    public void setAnswerValue(String answerValue) {
-        this.answerValue = answerValue;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
-
-
