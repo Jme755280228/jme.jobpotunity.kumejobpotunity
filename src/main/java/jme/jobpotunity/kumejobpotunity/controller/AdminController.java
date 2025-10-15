@@ -1,8 +1,7 @@
 package jme.jobpotunity.kumejobpotunity.controller;
 
-import jme.jobpotunity.kumejobpotunity.entity.JobPosting;
+import jme.jobpotunity.kumejobpotunity.domain.job.JobPosting;
 import jme.jobpotunity.kumejobpotunity.service.JobPostingService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,11 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.security.Principal;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin")
@@ -28,51 +25,36 @@ public class AdminController {
     }
 
     /**
-     * Admin Dashboard တွင် Approve မလုပ်ရသေးသော Job များကို စာရင်းပြုစုပြသခြင်း။
+     * အတည်ပြုရန်လိုအပ်သော Job များစာရင်းကို ပြသရန်
      */
-    @GetMapping("/jobs")
-    // 🎯 FIX 1.1: Service နှင့် ကိုက်ညီရန် Pageable parameter ကို လက်ခံပါ။
-    public String showAdminDashboard(Model model, Principal principal, Pageable pageable) {
-
-        // 🎯 FIX 1.2: Service မှ findPendingJobs(pageable) ကို ခေါ်ပြီး Page object ဖြင့် လက်ခံပါ။
-        Page<JobPosting> jobsPage = jobPostingService.findPendingJobs(pageable);
-
-        // 🎯 FIX 1.3: Model သို့ Page object ကို ထည့်ပါ။ (Template တွင် jobsPage.content ဖြင့် သုံးရမည်)
-        model.addAttribute("jobsPage", jobsPage);
-        model.addAttribute("adminName", principal.getName());
-        model.addAttribute("viewMode", "Pending Jobs"); 
-
-        return "admin-jobs";
+    @GetMapping("/jobs/pending")
+    public String listPendingJobs(Model model, Pageable pageable) {
+        Page<JobPosting> pendingJobs = jobPostingService.findByApprovalStatus(false, pageable);
+        model.addAttribute("jobsPage", pendingJobs);
+        model.addAttribute("pageTitle", "Pending Job Approvals");
+        return "admin-jobs"; // A view to list jobs for admin
     }
 
     /**
-     * Job Posting တစ်ခုကို Admin မှ အတည်ပြုပေးခြင်း
+     * Job Posting ကို အတည်ပြုခြင်း
      */
-    @GetMapping("/jobs/approve/{id}")
+    @PostMapping("/jobs/{id}/approve")
     public String approveJob(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        // 🎯 FIX 2.1: Service မှ Optional<JobPosting> ကို လက်ခံပါ။
-        Optional<JobPosting> approvedJob = jobPostingService.approveJob(id);
-
-        // 🎯 FIX 2.2: .isPresent() ကို သုံးပြီး အောင်မြင်ခြင်း 여부 ကို စစ်ဆေးပါ။
-        if (approvedJob.isPresent()) {
-            redirectAttributes.addFlashAttribute("successMessage", "Job Posting ID " + id + " ကို အောင်မြင်စွာ အတည်ပြုပြီးပါပြီ။");
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "Job Posting ID " + id + " ကို ရှာမတွေ့ပါသဖြင့် အတည်ပြု၍ မရပါ။");
-        }
-
-        return "redirect:/admin/jobs";
+        jobPostingService.approveJob(id, true);
+        redirectAttributes.addFlashAttribute("successMessage", "Job has been approved successfully.");
+        return "redirect:/admin/jobs/pending";
     }
 
     /**
-     * အတည်ပြုပြီးသား Job များ သို့မဟုတ် အားလုံးကို ကြည့်ရှုရန်
+     * Job Posting ကို ပယ်ချခြင်း
      */
-    @GetMapping("/jobs/all")
-    public String showAllJobs(Model model, Principal principal, Pageable pageable) {
-        // 🎯 FIX 3.1: Consistent ဖြစ်စေရန် findAll() ကိုလည်း Pagination ဖြင့် ခေါ်ဆိုပါ။
-        Page<JobPosting> jobsPage = jobPostingService.findAll(pageable);
-        model.addAttribute("jobsPage", jobsPage);
-        model.addAttribute("adminName", principal.getName());
-        model.addAttribute("viewMode", "All Jobs");
-        return "admin-jobs";
+    @PostMapping("/jobs/{id}/reject")
+    public String rejectJob(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        // Here, rejecting might mean deleting it or setting a 'REJECTED' status
+        jobPostingService.deleteById(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Job has been rejected and removed.");
+        return "redirect:/admin/jobs/pending";
     }
 }
+
+

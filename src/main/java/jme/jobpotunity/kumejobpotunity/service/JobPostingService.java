@@ -1,7 +1,7 @@
 package jme.jobpotunity.kumejobpotunity.service;
 
-import jme.jobpotunity.kumejobpotunity.entity.JobPosting;
-import jme.jobpotunity.kumejobpotunity.entity.User;
+import jme.jobpotunity.kumejobpotunity.domain.job.JobPosting; // <-- domain layer import အသစ်
+import jme.jobpotunity.kumejobpotunity.domain.user.User;     // <-- domain layer import အသစ်
 import jme.jobpotunity.kumejobpotunity.repository.JobPostingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,15 +33,19 @@ public class JobPostingService {
         jobPostingRepository.deleteById(id);
     }
 
+
+
     public List<JobPosting> searchByTitleOrDescription(String keyword) {
         return jobPostingRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword);
     }
 
     public List<JobPosting> findByEmployer(User employer) {
-        return jobPostingRepository.findByEmployerUser(employer);
+        // Repository layer မှာ findByEmployerUser ကို findByEmployer လို့ ပြင်ခဲ့တဲ့အတွက် ဒီမှာလည်း လိုက်ပြင်
+        return jobPostingRepository.findByEmployer(employer); // <-- findByEmployerUser -> findByEmployer
     }
 
     public Page<JobPosting> findByApprovalStatus(boolean isApproved, Pageable pageable) {
         return jobPostingRepository.findByIsApproved(isApproved, pageable);
     }
 }
+

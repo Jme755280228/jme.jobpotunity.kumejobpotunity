@@ -2,7 +2,7 @@
 
 package jme.jobpotunity.kumejobpotunity.repository;
 
-import jme.jobpotunity.kumejobpotunity.entity.Company;
+import jme.jobpotunity.kumejobpotunity.domain.job.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional; // Optional import
 

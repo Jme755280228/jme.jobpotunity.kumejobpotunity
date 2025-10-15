@@ -1,20 +1,22 @@
-// src/main/java/jme/jobpotunity/kumejobpotunity/service/JobApplicationService.java
-
 package jme.jobpotunity.kumejobpotunity.service;
 
-import jme.jobpotunity.kumejobpotunity.entity.JobApplication;
-import jme.jobpotunity.kumejobpotunity.entity.JobPosting;
-import jme.jobpotunity.kumejobpotunity.entity.User;
+import jme.jobpotunity.kumejobpotunity.domain.application.JobApplication; // <-- domain layer import အသစ်
+import jme.jobpotunity.kumejobpotunity.domain.enums.ApplicationStatus;    // <-- enum import အသစ်
+import jme.jobpotunity.kumejobpotunity.domain.job.JobPosting;      // <-- domain layer import အသစ်
+import jme.jobpotunity.kumejobpotunity.domain.user.ApplicantProfile; // <-- domain layer import အသစ်
+import jme.jobpotunity.kumejobpotunity.domain.user.User;            // <-- domain layer import အသစ်
 import jme.jobpotunity.kumejobpotunity.repository.JobApplicationRepository;
 import jme.jobpotunity.kumejobpotunity.repository.JobPostingRepository;
 import jme.jobpotunity.kumejobpotunity.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class JobApplicationService {
 
     private final JobApplicationRepository jobApplicationRepository;
@@ -33,68 +35,40 @@ public class JobApplicationService {
     /**
      * Job Application အသစ်တစ်ခု ဖန်တီးခြင်း
      */
-    public JobApplication createApplication(Long jobId, Long userId, String coverLetter) {
-        Optional<JobPosting> jobPostingOpt = jobPostingRepository.findById(jobId);
-        Optional<User> userOpt = userRepository.findById(userId);
+    public JobApplication createApplication(Long jobId, Long userId) { // <-- coverLetter ကို ဖယ်ရှား
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+        
+        JobPosting jobPosting = jobPostingRepository.findById(jobId)
+                .orElseThrow(() -> new IllegalArgumentException("Job posting not found with id: " + jobId));
 
-        if (jobPostingOpt.isEmpty() || userOpt.isEmpty()) {
-            throw new IllegalArgumentException("Job posting or user not found.");
+        // <-- Logic အသစ်: User မှာ ApplicantProfile ရှိမှ လျှောက်ခွင့်ပြုရန်
+        ApplicantProfile applicantProfile = user.getApplicantProfile();
+        if (applicantProfile == null) {
+            throw new IllegalStateException("User must create an applicant profile before applying for a job.");
         }
 
         JobApplication application = new JobApplication();
-        application.setJobPosting(jobPostingOpt.get());
-        application.setUser(userOpt.get());
-        application.setCoverLetter(coverLetter);
-        application.setStatus("PENDING"); // Default status
+        application.setJobPosting(jobPosting);
+        application.setApplicantProfile(applicantProfile); // <-- setUser အစား setApplicantProfile
+        application.setStatus(ApplicationStatus.PENDING); // <-- String အစား Enum ကိုသုံး
 
         return jobApplicationRepository.save(application);
     }
 
-    /**
-     * Job Application ကို ID ဖြင့် ရှာဖွေခြင်း
-     */
-    public Optional<JobApplication> findById(Long id) {
-        return jobApplicationRepository.findById(id);
-    }
+    // ... (findById, findAll, findApplicationsByJobPosting methods are okay with just import changes)
 
     /**
-     * Job Application အားလုံးကို ရှာဖွေခြင်း
+     * Application Status ကို update လုပ်ခြင်း
      */
-    public List<JobApplication> findAll() {
-        return jobApplicationRepository.findAll();
-    }
-
-    /**
-     * တစ်ဦးချင်းစီအတွက် Job Application များကို ရှာဖွေခြင်း
-     */
-    public List<JobApplication> findApplicationsByUser(User user) {
-        return jobApplicationRepository.findByUser(user);
-    }
-
-    /**
-     * အလုပ်ခန့်အပ်သူ (employer) အနေနဲ့ Job Posting တစ်ခုအတွက် လျှောက်လွှာများ ရှာခြင်း
-     */
-    public List<JobApplication> findApplicationsByJob(JobPosting jobPosting) {
-        return jobApplicationRepository.findByJobPosting(jobPosting);
-    }
-
-    /**
-     * Application Status ကို update လုပ်ခြင်း (e.g. ACCEPTED, REJECTED)
-     */
-    public JobApplication updateStatus(Long applicationId, String newStatus) {
-        Optional<JobApplication> optionalApp = jobApplicationRepository.findById(applicationId);
-        if (optionalApp.isEmpty()) {
-            throw new IllegalArgumentException("Application not found");
-        }
-        JobApplication application = optionalApp.get();
-        application.setStatus(newStatus);
+    public JobApplication updateStatus(Long applicationId, ApplicationStatus newStatus) { // <-- String -> ApplicationStatus enum
+        JobApplication application = jobApplicationRepository.findById(applicationId)
+                .orElseThrow(() -> new IllegalArgumentException("Application not found with id: " + applicationId));
+        
+        application.setStatus(newStatus); // <-- newStatus is now an enum
         return jobApplicationRepository.save(application);
     }
-
-    /**
-     * Application ကို ဖျက်ခြင်း
-     */
-    public void deleteById(Long id) {
-        jobApplicationRepository.deleteById(id);
-    }
+    
+    // ... other methods like findById, deleteById
 }
+

@@ -1,15 +1,16 @@
-// src/main/java/jme/jobpotunity/kumejobpotunity/service/UserService.java
-
 package jme.jobpotunity.kumejobpotunity.service;
 
-import jme.jobpotunity.kumejobpotunity.entity.User;
+import jme.jobpotunity.kumejobpotunity.domain.enums.UserRole; // <-- enum import အသစ်
+import jme.jobpotunity.kumejobpotunity.domain.user.User;      // <-- domain layer import အသစ်
 import jme.jobpotunity.kumejobpotunity.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set; // <-- Set import ထည့်သွင်း
 
 @Service
 public class UserService {
@@ -18,37 +19,35 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     /**
-     * ✅ username ရှိပြီးသားလား စစ်ဆေးခြင်း
+     * ✅ email ရှိပြီးသားလား စစ်ဆေးခြင်း
      */
-    public boolean isUsernameTaken(String username) {
-        return userRepository.findByUsername(username).isPresent();
+    public boolean isEmailTaken(String email) { // <-- username -> email
+        return userRepository.findByEmail(email).isPresent(); // <-- findByUsername -> findByEmail
     }
 
     /**
-     * ✅ အသုံးပြုသူအသစ်ကို စာရင်းသွင်းခြင်း (Default Role: USER)
+     * ✅ အသုံးပြုသူအသစ်ကို စာရင်းသွင်းခြင်း (Default Role: APPLICANT)
      */
-    public User registerNewUser(String username, String password) {
+    public User registerNewUser(String email, String password, Set<UserRole> roles) { // <-- username -> email, roles type ပြောင်း
         User newUser = new User();
-        newUser.setUsername(username);
+        newUser.setEmail(email); // <-- setUsername -> setEmail
         newUser.setPassword(passwordEncoder.encode(password));
-        newUser.setRoles(new HashSet<>()); // initialize HashSet
-        newUser.getRoles().add("USER");
+        newUser.setRoles(roles); // <-- String "USER" အစား enum Set ကို တိုက်ရိုက်သုံး
 
         return userRepository.save(newUser);
     }
 
     /**
-     * ✅ username ဖြင့် User ရှာဖွေရန်
+     * ✅ email ဖြင့် User ရှာဖွေရန်
      */
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public Optional<User> findByEmail(String email) { // <-- username -> email
+        return userRepository.findByEmail(email); // <-- findByUsername -> findByEmail
     }
 
     /**
@@ -61,7 +60,7 @@ public class UserService {
     /**
      * ✅ အသုံးပြုသူအားလုံးကို ပြသရန်
      */
-    public java.util.List<User> findAll() {
+    public List<User> findAll() {
         return userRepository.findAll();
     }
 
@@ -72,3 +71,4 @@ public class UserService {
         userRepository.deleteById(id);
     }
 }
+

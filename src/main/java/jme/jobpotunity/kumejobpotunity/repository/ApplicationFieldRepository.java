@@ -1,6 +1,6 @@
 package jme.jobpotunity.kumejobpotunity.repository;
 
-import jme.jobpotunity.kumejobpotunity.entity.ApplicationField;
+import jme.jobpotunity.kumejobpotunity.domain.application.ApplicationField;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

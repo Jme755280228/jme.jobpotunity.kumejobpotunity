@@ -1,6 +1,6 @@
 package jme.jobpotunity.kumejobpotunity.repository;
 
-import jme.jobpotunity.kumejobpotunity.entity.Education;
+import jme.jobpotunity.kumejobpotunity.domain.user.Education;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
